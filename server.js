@@ -11,13 +11,14 @@ var config = require('./config');
 var app  = express();
 
 var passport = require('passport');
+var bodyParser = require('body-parser');
 
 app.set('views', __dirname + '/authViews');
 app.set('view engine', 'ejs');
 //app.use(express.logger()); TODO: require('morgan')
 //app.use(express.cookieParser());
 app.use(bodyParser.json());
-app.use(require('body-parser').urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: true }));
 //app.use(express.methodOverride());
 //app.use(express.session({ secret: 'keyboard cat' }));
 // Initialize Passport!  Also use passport.session() middleware, to support

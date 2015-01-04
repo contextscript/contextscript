@@ -12,25 +12,25 @@ var app  = express();
 
 var passport = require('passport');
 
-app.configure(function(){
-    app.set('views', __dirname + '/authViews');
-    app.set('view engine', 'ejs');
-    app.use(express.logger());
-    app.use(express.cookieParser());
-    app.use(express.bodyParser());
-    app.use(express.methodOverride());
-    app.use(express.session({ secret: 'keyboard cat' }));
-    // Initialize Passport!  Also use passport.session() middleware, to support
-    // persistent login sessions (recommended).
-    app.use(passport.initialize());
-    app.use(passport.session());
-    app.use(app.router);
-    app.use(express.static(__dirname + '/static'));
-    //error handling should come last
-    app.use(express.errorHandler({showStack: true, dumpExceptions: true}));
-});
+app.set('views', __dirname + '/authViews');
+app.set('view engine', 'ejs');
+//app.use(express.logger()); TODO: require('morgan')
+//app.use(express.cookieParser());
+app.use(bodyParser.json());
+app.use(require('body-parser').urlencoded({ extended: true }));
+//app.use(express.methodOverride());
+//app.use(express.session({ secret: 'keyboard cat' }));
+// Initialize Passport!  Also use passport.session() middleware, to support
+// persistent login sessions (recommended).
+//app.use(passport.initialize());
+//app.use(passport.session());
+//app.use(app.router);
+app.use(express.static(__dirname + '/static'));
+//error handling should come last
+//app.use(express.errorHandler({showStack: true, dumpExceptions: true}));
 
-require('./login').attachRoutes(app);
+
+//require('./login').attachRoutes(app);
 
 /*  =====================================================================  */
 /*  Setup route handlers.  */
@@ -216,7 +216,7 @@ process.on('exit', function() { terminator(); });
 
 app.listen(port, ipaddr, function() { 
     var reinit = true;
-    db = mongo.db(config.databaseUrl);
+    db = mongo.db("mongodb://" + config.databaseUrl);
     db.dropCollection('scripts');
     db.createCollection('scripts', function(err, collection) {
       var createScriptCode = fs.readFileSync('createScript.js', 'utf8');
@@ -235,7 +235,7 @@ app.listen(port, ipaddr, function() {
           throw err;
         }
         console.log("create script inserted");
-        db.collection('scripts').ensureIndex( { 'context.q': "text" } );
+        db.collection('scripts').ensureIndex( { 'context.q': "text" }, function(){});
         
       });
     });

@@ -1,0 +1,55 @@
+.ctxscript-box h4 {
+  margin-top: 8px;
+  margin-bottom: 0px;
+}
+.ctxscript-prev {
+  margin-bottom: -6px;
+}
+.ctxscript-arrow {
+  font-weight: bold;
+  margin: 5px;
+}
+.ctxscript-bar {
+  background-color: #ADA;
+  position: relative;
+}
+.ctxscript-bar h1 {
+  text-align: center;
+  border: none;
+  padding: 1px;
+  font-size: 14px;
+  font-style: italic;
+  margin: 0;
+  color: green;
+  line-height: 2em;
+}
+.ctxscript-links {
+  display: none;
+  background-color: #ADA;
+  width: 100%;
+  position: absolute;
+  box-shadow: 0px 2px 0px 0px rgba(0,0,0,.5);
+}
+.ctxscript-bar:hover .ctxscript-links {
+  display: block;
+}
+.editor {
+  border: 1px solid lightgray;
+}
+.ctxscript-btn-group button {
+  margin-left: 6px;
+  display: inline;
+}
+.ctxscript-result {
+  overflow: auto;
+  margin: auto;
+  max-width: 360px;
+  max-height: 500px;
+  border: 1px solid gray;
+  background-color: white;
+  font-family: "Courier New", monospace;
+  white-space: pre;
+}
+.ctxscript-result:empty {
+  display: none;
+}

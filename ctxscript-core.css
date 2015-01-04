@@ -1,0 +1,30 @@
+.ctxscript-container {
+  position: fixed;
+  top: 0;
+  right: 0;
+  max-height: 100%;
+  overflow-y: auto;
+  /* This prevents boxes from being cutoff when scrollbars are present */
+  padding-left: 14px;
+  z-index: 100;
+  /*background: rgba(255, 255, 255, 0.4);*/
+}
+.ctxscript-box {
+  display: block;
+  background-color: #EEE;
+  border: 1px solid #BBB;
+  padding: 2px;
+  margin: 5px;
+  font-family: sans-serif;
+  float: right;
+  clear: both;
+  min-width: 410px;
+  box-shadow: inset 0px 1px 2px white;
+}
+.ctxscript-invoke {
+  margin-left: 2px;
+}
+.ctxscript-btn {
+  display: block;
+  margin-top: 10px;
+}

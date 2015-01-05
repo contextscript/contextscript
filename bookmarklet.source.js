@@ -1,6 +1,7 @@
+(function(config){
 var link = document.createElement("link");
 link.rel="stylesheet";
-link.href = "https://contextcommand-nathanathan.c9.io/ctxscript.css";
+link.href = config.url + "/ctxscript.css";
 document.body.appendChild(link);
 var lst = function(path) {
   return function(){
@@ -26,15 +27,11 @@ container.innerHTML = '<div id="ctxscript-out"></div>' +
 var body = document.getElementsByTagName('body')[0];
 body.appendChild(container);
 document.getElementById('q').focus();
-lst("https://contextcommand-nathanathan.c9.io/main.js")()
+lst(config.url + "/main.js")()
 .then(lst("https://github.jspm.io/jmcriffey/bower-traceur@0.0.79/traceur.js"))
 .then(lst("https://github.jspm.io/ModuleLoader/es6-module-loader@0.10.0/dist/es6-module-loader.js"))
 .then(lst("https://jspm.io/system@0.9.js"))
 .then(function(){
-  //System.baseURL = 'https://registry.jspm.io';
-  window.initializeCtxScript({
-    user: 'nathan',
-    key: '123',
-    url: "https://contextcommand-c9-nathanathan.c9.io"
-  });
+  window.initializeCtxScript(config);
 });
+})/*config injected here*/

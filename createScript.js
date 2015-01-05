@@ -35,6 +35,10 @@ System.import('ace/ace')
     contextEditor.getSession().setValue(
       JSON.stringify(prevContext, 0, 2)
     );
+  } else {
+    contextEditor.getSession().setValue(
+      JSON.stringify({q:"Write a trigger phrase here..."}, 0, 2)
+    );
   }
   var scriptEditor = ace.edit($result.find("#script")[0]);
   //scriptEditor.getSession().setMode("ace/mode/javascript");

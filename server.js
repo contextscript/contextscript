@@ -1,12 +1,17 @@
 #!/bin/env node
 var express = require('express');
 var fs      = require('fs');
-var _ = require('underscore')._;
 
 //Database:
 var mongo = require('mongoskin');
 var db;
 var config = require('./config');
+
+var elasticsearch = require('elasticsearch');
+var esclient = new elasticsearch.Client({
+  host: 'localhost:9200',
+  log: 'trace'
+});
 
 var app  = express();
 
@@ -45,6 +50,20 @@ app.get('/health', function(req, res){
 app.post('/v0/search', function(req, res, next){
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "X-Requested-With");
+  esclient.search({
+    index: 'contextscripts',
+    body: {
+      query: {
+        match: {
+          'context.q': req.body.context.q
+        }
+      }
+    }
+  }).then(function(result){
+    res.writeHead(200, {'Content-Type': 'text/plain'});
+    res.end(JSON.stringify(result.hits));
+  });
+  /*
   var query = {
     $text: { $search: req.body.context.q }
   };
@@ -69,7 +88,7 @@ app.post('/v0/search', function(req, res, next){
     res.end(JSON.stringify({
       hits: hits
     }));
-    /*
+
     res.end(JSON.stringify({
       result: result.filter(function(sResult){
         var s = sResult.trigger;
@@ -90,27 +109,30 @@ app.post('/v0/search', function(req, res, next){
         return true;
       })
     }));
-    */
+    
   });
-
+  */
 });
 app.post('/v0/scripts', function(req, res, next){
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "X-Requested-With");
   //TODO: Check key
   //TODO: Validation
-  delete req.body.key;
-  req.body.lastModified = new Date();
-  db.collection('scripts').save(req.body, {
-    upsert: true,
-    safe: true
-  }, function(err, result) {
-    if(err) next(err);
+  // Index is used so that the whole document is replaced
+  esclient.index({
+    index: 'contextscripts',
+    type: 'contextscript',
+    id: req.body._id,
+    //This will cause perf problems
+    refresh: true,
+    body: {
+      context: req.body.context,
+      script: req.body.script,
+      lastModified: new Date()
+    }
+  }).then(function(result) {
     res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.end(JSON.stringify({
-      error: err,
-      result: result
-    }));
+    res.end(JSON.stringify(result));
   });
 });
 if(config.debug){
@@ -182,71 +204,50 @@ app.get('/', function(req, res, next){
   });
 });
 
-//  Get the environment variables we need.
-var ipaddr, port;
-if(config.openshift){
-    ipaddr = process.env.OPENSHIFT_INTERNAL_IP;
-    port = process.env.OPENSHIFT_INTERNAL_PORT || 8080;
-} else {
-    ipaddr = process.env.IP;
-    port = process.env.PORT;
-}
-
-if (typeof ipaddr === "undefined") {
-   console.warn('No OPENSHIFT_INTERNAL_IP environment variable');
-}
-
-//  terminator === the termination handler.
-function terminator(sig) {
-   if (typeof sig === "string") {
-      console.log('%s: Received %s - terminating Node server ...',
-                  Date(Date.now()), sig);
-      process.exit(1);
-   }
-   console.log('%s: Node server stopped.', Date(Date.now()) );
-}
-
-//  Process on exit and signals.
-process.on('exit', function() { terminator(); });
-
-['SIGHUP', 'SIGINT', 'SIGQUIT', 'SIGILL', 'SIGTRAP', 'SIGABRT', 'SIGBUS',
- 'SIGFPE', 'SIGUSR1', 'SIGSEGV', 'SIGUSR2', 'SIGPIPE', 'SIGTERM'
-].forEach(function(element, index, array) {
-    process.on(element, function() { terminator(element); });
-});
+var ipaddr = process.env.IP;
+var port = process.env.PORT;
 
 app.listen(port, ipaddr, function() { 
-    var reinit = true;
-    db = mongo.db("mongodb://" + config.databaseUrl);
-    db.dropCollection('scripts');
-    db.createCollection('scripts', function(err, collection) {
-      var createScriptCode = fs.readFileSync('createScript.js', 'utf8');
-      db.collection('scripts').insert({
+  //var reinit = true;
+  db = mongo.db("mongodb://" + config.databaseUrl);
+  //db.dropCollection('scripts');
+  esclient.indices.exists({index:'scripts'})
+  .then(function(itExists){
+    if(!itExists) {
+      return esclient.indices.create({index:'scripts'});
+    } else {
+      return true;
+    }
+  })
+  .then(function(result) {
+    var createScriptCode = fs.readFileSync('createScript.js', 'utf8');
+    return esclient.index({
+      index: 'contextscripts',
+      type: 'contextscript',
+      id: 'createScript',
+      //This will probably cause perf problems
+      refresh: true,
+      body: {
         context: {
           platform: { javascript: true },
           q: "Create a script for this context"
         },
+        //This is just a data field, not the script property
+        //used by the update method.
         script: createScriptCode
-      }, {
-        upsert: true,
-        safe: true
-      },
-      function(err, result) {
-        if(err) {
-          throw err;
-        }
-        console.log("create script inserted");
-        db.collection('scripts').ensureIndex( { 'context.q': "text" }, function(){});
-        
-      });
+      }
     });
-    db.createCollection('users', function(err, collection) {
-        if(reinit){
-          db.collection('users').remove(function() {
-            console.log('%s: Node server started on %s:%d ...', Date(Date.now()), ipaddr, port);
-          });
-        } else {
-          console.log('%s: Node server started on %s:%d ...', Date(Date.now()), ipaddr, port);
-        }
-    });
+  })
+  .then(function(){
+    console.log("create script inserted");
+  });
+  // db.createCollection('users', function(err, collection) {
+  //     if(reinit){
+  //       db.collection('users').remove(function() {
+  //         console.log('%s: Node server started on %s:%d ...', Date(Date.now()), ipaddr, port);
+  //       });
+  //     } else {
+  //       console.log('%s: Node server started on %s:%d ...', Date(Date.now()), ipaddr, port);
+  //     }
+  // });
 });

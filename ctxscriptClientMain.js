@@ -51,7 +51,7 @@ var doSearch = function(q){
     ctxscript.meta = result;
     var $bar = $('<div class="ctxscript-bar"><h1></h1></div>');
     //TODO Fill in template variables
-    $bar.find('h1').text(result.context.q);
+    $bar.find('h1').text(result._source.context.q);
     var $links = $('<div class="ctxscript-links">');
     $links.append(
       $('<a class="ctxscript-source" target="_blank">Show Source</a>').prop({
@@ -62,7 +62,7 @@ var doSearch = function(q){
     ctxscript.container.append($bar);
     ctxscript.container.append('<div class="ctxscript-result"></div>');
     eval(
-      traceur.Compiler.script(result.script)
+      traceur.Compiler.script(result._source.script)
     );
   };
   $.post(config.url + "/v0/search", {

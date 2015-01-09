@@ -19,8 +19,12 @@ var $result = $(
 );
 ctxscript.container.append($result);
 System.import('ace/ace')
-.then(function() {
+.then(function(){
+  return System.import('github:nodeca/js-yaml@master/dist/js-yaml');
+})
+.then(function(YAML) {
   var prevContext;
+  window.YAML = YAML;
   if(ctxscript.history.length > 0) {
     prevContext = ctxscript.history.slice(-1)[0].context;
   }
@@ -32,11 +36,14 @@ System.import('ace/ace')
   contextEditor.setOption("highlightActiveLine", false);
   if(prevContext) {
     contextEditor.getSession().setValue(
-      JSON.stringify(prevContext, 0, 2)
+      "# The location is optional. If you specify a url href, \n" +
+      "# it must exactly match the users url for script to be triggered.\n" +
+      // extend is used to copy the prototype properties so they are serialized.
+      YAML.dump($.extend({}, prevContext), 0, 2)
     );
   } else {
     contextEditor.getSession().setValue(
-      JSON.stringify({q:"Write a trigger phrase here..."}, 0, 2)
+      YAML.dump({q:"Write a trigger phrase here..."}, 0, 2)
     );
   }
   var scriptEditor = ace.edit($result.find("#script")[0]);
@@ -45,7 +52,7 @@ System.import('ace/ace')
   scriptEditor.setOption("maxLines", 12);
   scriptEditor.setOption("minLines", 3);
   scriptEditor.setOption("highlightActiveLine", false);
-  scriptEditor.getSession().setValue('ctxscript.container.text("Hello World!")');
+  scriptEditor.getSession().setValue('ctxscript.container.text("Hello World!");');
   var scriptId = ctxscript.config.user + '-' + Number(new Date());
   $result.find("#test").click(function ( e ) {
     var $testContainer = $result.find('.test-container');
@@ -66,7 +73,7 @@ System.import('ace/ace')
     $(e.target).text("saving...");
     $.post(ctxscript.config.url + '/v0/scripts', {
       _id: scriptId,
-      context: JSON.parse(contextEditor.getSession().getValue()),
+      context: YAML.safeLoad(contextEditor.getSession().getValue()),
       script: scriptEditor.getSession().getValue(),
       user: ctxscript.config.user,
       key: ctxscript.config.key

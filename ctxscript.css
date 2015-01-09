@@ -24,6 +24,8 @@
 .ctxscript-bar {
   background-color: #ADA;
   position: relative;
+  margin-bottom: -6px;
+  box-shadow: none;
 }
 .ctxscript-bar h1 {
   text-align: center;

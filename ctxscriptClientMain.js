@@ -1,7 +1,10 @@
 window.initializeCtxScript = function(config){
 console.log("Initializing context script...");
 var context = {
-  url: window.location.toString()
+  location: {
+    href: window.location.href,
+    host: window.location.host
+  }
 };
 var history = [];
 System.import("jquery@2.1").then(function(jQuery) {
@@ -45,9 +48,13 @@ var doSearch = function(q){
   };
   var evaluateResult = function(result){
     ctxscript.meta = result;
-    var $bar = $('<div class="ctxscript-bar"><h1></h1></div>');
+    ctxscript.container.addClass("ctxscript-bar");
     //TODO Fill in template variables
-    $bar.find('h1').text(result._source.context.q);
+    var title = result._source.context.q;
+    if($.isArray(title)) {
+      title = title.join(', ');
+    }
+    ctxscript.container.append($('<h1>').text(title));
     var $links = $('<div class="ctxscript-links">');
     $links.append(
       //TODO: Hook this button up
@@ -56,8 +63,8 @@ var doSearch = function(q){
         href: ctxscript.config.url + '/v0/scripts/' + result._id,
       })
     );
-    $bar.append($links);
-    ctxscript.container.append($bar);
+    ctxscript.container.append($links);
+    ctxscript.container = createBox();
     ctxscript.container.append('<div class="ctxscript-result"></div>');
     eval(
       traceur.Compiler.script(result._source.script)

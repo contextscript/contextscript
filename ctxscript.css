@@ -1,13 +1,14 @@
-.ctxscript-settings {
+.ctxscript-settings, .ctxscript-controls {
   background-color: white;
   margin: 2px -2px -2px -2px;
   border-top: 1px solid lightgray;
 }
-.ctxscript-settings > p {
+.ctxscript-settings > p, .ctxscript-controls > a {
   margin: 0;
   padding: 2px 10px;
+  display: block;
 }
-.ctxscript-settings > p:hover {
+.ctxscript-settings > p:hover, .ctxscript-controls > a:hover {
   background-color: lightblue;
 }
 .ctxscript-box h4 {
@@ -37,18 +38,8 @@
   color: green;
   line-height: 2em;
 }
-.ctxscript-links {
-  display: none;
-  background-color: #ADA;
-  width: 100%;
-  position: absolute;
-  box-shadow: 0px 2px 0px 0px rgba(0,0,0,.5);
-}
-.ctxscript-links a {
-  display: block;
-}
-.ctxscript-bar:hover .ctxscript-links {
-  display: block;
+.ctxscript-bar:hover {
+  background-color: white;
 }
 .ctxscript-btn-group button {
   margin-left: 6px;

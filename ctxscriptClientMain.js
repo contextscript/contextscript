@@ -55,15 +55,19 @@ var doSearch = function(q){
       title = title.join(', ');
     }
     ctxscript.container.append($('<h1>').text(title));
-    var $links = $('<div class="ctxscript-links">');
-    $links.append(
+    var $controls = $('<div class="ctxscript-controls">');
+    $controls.append(
       //TODO: Hook this button up
       $('<a class="ctxscript-source" target="_blank">Alternative Scripts</a>'),
       $('<a class="ctxscript-source" target="_blank">Show Source</a>').prop({
         href: ctxscript.config.url + '/v0/scripts/' + result._id,
       })
     );
-    ctxscript.container.append($links);
+    $controls.hide();
+    ctxscript.container.append($controls);
+    ctxscript.container.click(function(){
+      $controls.toggle();
+    });
     ctxscript.container = createBox();
     ctxscript.container.append('<div class="ctxscript-result"></div>');
     eval(

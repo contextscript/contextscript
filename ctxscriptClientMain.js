@@ -117,19 +117,26 @@ var doSearch = function(q){
   history = history.concat(historyItem);
 };
 $(document).on('click', '.ctxscript-invoke', function ( e ) {
-  doSearch($('#q').val());
-  $('#q').val('');
+  doSearch($('#ctxscript-q').val());
+  $('#ctxscript-q').val('');
 });
-$(document).on('keypress', '#q', function(e) {
+$(document).on('click', '.ctxscript-settings-btn', function ( e ) {
+  $('.ctxscript-settings').toggle();
+});
+$(document).on('click', '.ctxscript-close', function ( e ) {
+  $('.ctxscript-container').hide();
+});
+$(document).on('keypress', '#ctxscript-q', function(e) {
   if(e.which == 13) {
-    doSearch($('#q').val());
-    $('#q').val('');
+    doSearch($('#ctxscript-q').val());
+    $('#ctxscript-q').val('');
   }
 });
 $('.ctxscript-invoke').prop('disabled', false);
-  var $suggestions = $('<div class="ctxscript-invoke ctxscript-box">');
-  $suggestions.append('<sup>suggestions:</sup>');
-  $('.ctxscript-container').append($suggestions);
+$('.ctxscript-settings-btn').prop('disabled', false);
+var $suggestions = $('<div class="ctxscript-box">');
+$suggestions.append('<sup>suggestions:</sup>');
+$('.ctxscript-container').append($suggestions);
 });
 });
 };

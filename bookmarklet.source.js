@@ -1,7 +1,33 @@
 (function(config){
+//If ctxscript was previously closed, just reopen the old instance.
+var containers = document.getElementsByClassName('ctxscript-container');
+if(containers.length > 0) {
+  containers[0].style.display = "";
+  return;
+}
 var link = document.createElement("link");
 link.rel="stylesheet";
 link.href = config.url + "/ctxscript.css";
+var displayCommandBox = function(){
+  //We need to wait for the css to take effect.
+  var container = document.createElement('div');
+  container.className = "ctxscript-container";
+  container.innerHTML = '<div id="ctxscript-out"></div>' +
+    '<div class="ctxscript-box">' +
+    '<input id="ctxscript-q"></input>' +
+    '<button class="ctxscript-invoke" disabled=disabled>&gt;</button>' +
+    '<button class="ctxscript-settings-btn" disabled=disabled>≡</button>' +
+    '<div class="ctxscript-settings" style="display:none;"><p class="ctxscript-close">Close</p></div>' +
+    '</div>';
+  var body = document.getElementsByTagName('body')[0];
+  body.appendChild(container);
+  document.getElementById('ctxscript-q').focus();
+};
+if (link.addEventListener) {
+  link.addEventListener("load", displayCommandBox, false);
+} else if (link.readyState) {
+  link.onreadystatechange = displayCommandBox;
+}
 document.body.appendChild(link);
 var lst = function(path) {
   return function(){
@@ -17,16 +43,6 @@ var lst = function(path) {
     });
   };
 };
-var container = document.createElement('div');
-container.className = "ctxscript-container";
-container.innerHTML = '<div id="ctxscript-out"></div>' +
-  '<div class="ctxscript-box">' +
-  '<input id="q" size=50></input>' +
-  '<button class="ctxscript-invoke" disabled=disabled>&gt;</button>' +
-  '</div>';
-var body = document.getElementsByTagName('body')[0];
-body.appendChild(container);
-document.getElementById('q').focus();
 lst(config.url + "/main.js")()
 .then(lst("https://github.jspm.io/jmcriffey/bower-traceur@0.0.79/traceur.js"))
 .then(lst("https://github.jspm.io/ModuleLoader/es6-module-loader@0.10.0/dist/es6-module-loader.js"))

@@ -1,3 +1,15 @@
+.ctxscript-settings {
+  background-color: white;
+  margin: 2px -2px -2px -2px;
+  border-top: 1px solid lightgray;
+}
+.ctxscript-settings > p {
+  margin: 0;
+  padding: 2px 10px;
+}
+.ctxscript-settings > p:hover {
+  background-color: lightblue;
+}
 .ctxscript-box h4 {
   margin-top: 8px;
   margin-bottom: 0px;
@@ -33,12 +45,13 @@
 .ctxscript-bar:hover .ctxscript-links {
   display: block;
 }
-.editor {
-  border: 1px solid lightgray;
-}
 .ctxscript-btn-group button {
   margin-left: 6px;
   display: inline;
+}
+/* editor specific sytles */
+.editor {
+  border: 1px solid lightgray;
 }
 .ctxscript-result {
   overflow: auto;
@@ -52,4 +65,9 @@
 }
 .ctxscript-result:empty {
   display: none;
+}
+.ctxscript-container fieldset {
+  margin: auto;
+  padding: 4px;
+  border: 1px solid black;
 }

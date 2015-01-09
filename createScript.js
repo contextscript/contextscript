@@ -27,7 +27,6 @@ System.import('ace/ace')
   var contextEditor = ace.edit($result.find("#context")[0]);
   //contextEditor.getSession().setMode("ace/mode/javascript");
   contextEditor.renderer.setShowGutter(false);
-  contextEditor.renderer.setPadding(10);//??
   contextEditor.setOption("maxLines", 12);
   contextEditor.setOption("minLines", 2);
   contextEditor.setOption("highlightActiveLine", false);

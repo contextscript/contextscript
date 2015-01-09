@@ -1,14 +1,9 @@
-//TODO: other scripts button
 window.initializeCtxScript = function(config){
-  console.log("Initializing context script...");
-  var context = {
-    platform: {
-      javascript: true
-    },
-    url: window.location.toString()
-  };
-  var history = [];
-
+console.log("Initializing context script...");
+var context = {
+  url: window.location.toString()
+};
+var history = [];
 System.import("jquery@2.1").then(function(jQuery) {
 var $ = window.$;
 if(jQuery && jQuery.fn && jQuery.fn.jquery) {
@@ -25,17 +20,18 @@ $(document).on('click', '.ctxscript-search-btn', function ( e ) {
   doSearch($(e.target).text());
 });
 var doSearch = function(q){
-  context.q = q;
+  var currentContext = Object.create(context);
+  currentContext.q = q;
   //Beware that the result might not be present.
   var historyItem = {
-    context: context
+    context: currentContext
   };
   createBox('<span class="ctxscript-arrow">&gt;</span>' + q).addClass("ctxscript-prev");
   var ctxscript = {
     //TODO: rename $el?
     container: createBox('Loading...'),
     history: history,
-    context: context,
+    context: currentContext,
     config: config,
     setResult: function(value){
       //TODO: This should only happen once.
@@ -54,6 +50,8 @@ var doSearch = function(q){
     $bar.find('h1').text(result._source.context.q);
     var $links = $('<div class="ctxscript-links">');
     $links.append(
+      //TODO: Hook this button up
+      $('<a class="ctxscript-source" target="_blank">Alternative Scripts</a>'),
       $('<a class="ctxscript-source" target="_blank">Show Source</a>').prop({
         href: ctxscript.config.url + '/v0/scripts/' + result._id,
       })
@@ -66,7 +64,7 @@ var doSearch = function(q){
     );
   };
   $.post(config.url + "/v0/search", {
-    context: context,
+    context: currentContext,
     user: config.user,
     key: config.key
   }).success(function(rawResp){
@@ -88,7 +86,7 @@ var doSearch = function(q){
       resp.hits.forEach(function(result){
         var $row = $('<li>');
         var $button = $('<button class="ctxscript-btn">')
-          .text(result.context.q);
+          .text(result.currentContext.q);
         $button.click(function(){
           ctxscript.container.append('<hr>');
           evaluateResult(result);

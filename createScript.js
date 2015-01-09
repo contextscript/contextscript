@@ -45,6 +45,7 @@ System.import('ace/ace')
   scriptEditor.setOption("maxLines", 12);
   scriptEditor.setOption("minLines", 3);
   scriptEditor.setOption("highlightActiveLine", false);
+  scriptEditor.getSession().setValue('ctxscript.container.text("Hello World!")');
   var scriptId = ctxscript.config.user + '-' + Number(new Date());
   $result.find("#test").click(function ( e ) {
     var $testContainer = $result.find('.test-container');

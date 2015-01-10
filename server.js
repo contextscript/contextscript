@@ -52,6 +52,10 @@ app.get('/', function(req, res, next){
   res.writeHead(200, {'Content-Type': 'text/html'});
   res.end(indexHtml);
 });
+app.get('/scripts/:script', function(req, res, next){
+  res.writeHead(200, {'Content-Type': 'text/html'});
+  res.end(indexHtml);
+});
 var ipaddr = process.env.IP;
 var port = process.env.PORT;
 

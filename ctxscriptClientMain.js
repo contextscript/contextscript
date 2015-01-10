@@ -31,8 +31,7 @@ var doSearch = function(q){
   };
   createBox('<span class="ctxscript-arrow">&gt;</span>' + q).addClass("ctxscript-prev");
   var ctxscript = {
-    //TODO: rename $el?
-    container: createBox('Loading...'),
+    $el: createBox('Loading...'),
     history: history,
     context: currentContext,
     config: config,
@@ -40,36 +39,38 @@ var doSearch = function(q){
       //TODO: This should only happen once.
       this.result = value;
       historyItem.result = value;
-      var $resultContainer = this.container.find('.ctxscript-result');
+      var $resultContainer = this.$el.find('.ctxscript-result');
       if($resultContainer.length > 0) {
-        $resultContainer.text(value);
+        $resultContainer.append('<h4>Result:</h4>');
+        $resultContainer.append($('<textarea readonly=true>').text(value));
       }
     }
   };
   var evaluateResult = function(result){
     ctxscript.meta = result;
-    ctxscript.container.addClass("ctxscript-bar");
+    ctxscript.$el.addClass("ctxscript-bar");
     //TODO Fill in template variables
     var title = result._source.context.q;
     if($.isArray(title)) {
       title = title.join(', ');
     }
-    ctxscript.container.append($('<h1>').text(title));
+    ctxscript.$el.append($('<h1>').text(title));
     var $controls = $('<div class="ctxscript-controls">');
     $controls.append(
-      //TODO: Hook this button up
+      //TODO: Hook this button up.
       $('<a class="ctxscript-source" target="_blank">Alternative Scripts</a>'),
       $('<a class="ctxscript-source" target="_blank">Show Source</a>').prop({
-        href: ctxscript.config.url + '/v0/scripts/' + result._id,
+        href: ctxscript.config.url + '/scripts/' + result._id,
       })
     );
     $controls.hide();
-    ctxscript.container.append($controls);
-    ctxscript.container.click(function(){
+    ctxscript.$el.append($controls);
+    //TODO: Create a button for toggling the controls.
+    ctxscript.$el.click(function(){
       $controls.toggle();
     });
-    ctxscript.container = createBox();
-    ctxscript.container.append('<div class="ctxscript-result"></div>');
+    ctxscript.$el = createBox();
+    ctxscript.$el.append('<div class="ctxscript-result"></div>');
     eval(
       traceur.Compiler.script(result._source.script)
     );
@@ -79,11 +80,11 @@ var doSearch = function(q){
     user: config.user,
     key: config.key
   }).success(function(rawResp){
-    ctxscript.container.empty();
+    ctxscript.$el.empty();
     historyItem.response = JSON.parse(rawResp);
     var resp = JSON.parse(rawResp);
     if (resp.hits.length === 0) {
-      ctxscript.container.append(
+      ctxscript.$el.append(
         '<h4>No scripts found</h4>' +
         '<button class="ctxscript-btn ctxscript-search-btn">Create a script for this context</button>' +
         '<button class="ctxscript-btn ctxscript-search-btn">Request a script for this context</button>'
@@ -91,15 +92,25 @@ var doSearch = function(q){
     } else if (resp.hits.length === 1) {
       evaluateResult(resp.hits[0]);
     } else {
-      //TODO Creation dates
-      ctxscript.container.append("<h4>Multiple results:</h4>");
+      // If there is one hit with a much higher score than the others
+      // that will be shown instead of the multiple result list.
+      var hitsAboveThreshold = resp.hits.filter(function(hit){
+        return hit._score > (resp.max_score / 2);
+      });
+      console.log(hitsAboveThreshold, resp);
+      if(hitsAboveThreshold.length == 1) {
+          evaluateResult(hitsAboveThreshold[0]);
+          return;
+      }
+      //TODO Creation dates and other meta-data
+      ctxscript.$el.append("<h4>Multiple results:</h4>");
       var $results = $("<ul>");
       resp.hits.forEach(function(result){
         var $row = $('<li>');
         var $button = $('<button class="ctxscript-btn">')
-          .text(result.currentContext.q);
+          .text(result._source.context.q);
         $button.click(function(){
-          ctxscript.container.append('<hr>');
+          ctxscript.$el.empty();
           evaluateResult(result);
         });
         $row.append(
@@ -110,11 +121,11 @@ var doSearch = function(q){
         );
         $results.append($row);
       });
-      ctxscript.container.append($results);
+      ctxscript.$el.append($results);
     }
   }).fail(function(error, msg){
     console.log(error);
-    ctxscript.container.html(
+    ctxscript.$el.html(
         '<h4>Error</h4>' +
         '<p>Message: ' +
           msg +
@@ -135,6 +146,7 @@ $(document).on('click', '.ctxscript-settings-btn', function ( e ) {
 $(document).on('click', '.ctxscript-close', function ( e ) {
   $('.ctxscript-container').hide();
 });
+//TODO: Go though command history with up/down arrows
 $(document).on('keypress', '#ctxscript-q', function(e) {
   if(e.which == 13) {
     doSearch($('#ctxscript-q').val());

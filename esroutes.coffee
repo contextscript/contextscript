@@ -39,16 +39,25 @@ app.post "/v0/search", (req, res, next) ->
   esclient.search(
     index: "contextscripts"
     body:
+      explain: true
       query:
         filtered:
           query:
-            fuzzy_like_this_field:
-              "context.q":
-                like_text: req.body.context.q
+            bool:
+              must:
+                fuzzy_like_this_field:
+                  "context.q":
+                    # More data is needed for tf to be useful.
+                    ignore_tf: true
+                    like_text: req.body.context.q
+              should:
+                match_phrase:
+                  "context.q":
+                    query: req.body.context.q
+                    slop: req.body.context.q.split(' ').length / 2
           filter:
             bool:
               must: must_terms
-          
   ).then (result) ->
     res.writeHead 200,
       "Content-Type": "text/plain"

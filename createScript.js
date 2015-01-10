@@ -17,7 +17,7 @@ var $result = $(
     '</div>' +
   '</div>'
 );
-ctxscript.container.append($result);
+ctxscript.$el.append($result);
 System.import('ace/ace')
 .then(function(){
   return System.import('github:nodeca/js-yaml@master/dist/js-yaml');
@@ -52,7 +52,7 @@ System.import('ace/ace')
   scriptEditor.setOption("maxLines", 12);
   scriptEditor.setOption("minLines", 3);
   scriptEditor.setOption("highlightActiveLine", false);
-  scriptEditor.getSession().setValue('ctxscript.container.text("Hello World!");');
+  scriptEditor.getSession().setValue('ctxscript.$el.text("Hello World!");');
   var scriptId = ctxscript.config.user + '-' + Number(new Date());
   $result.find("#test").click(function ( e ) {
     var $testContainer = $result.find('.test-container');
@@ -62,7 +62,7 @@ System.import('ace/ace')
     (function(){
       //Create a fake ctxscript variable for testing.
       var ctxscript = Object.create(originalCtxscript);
-      ctxscript.container = $testContainer;
+      ctxscript.$el = $testContainer;
       var scriptResult = eval(
         traceur.Compiler.script(script)
       );

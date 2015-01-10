@@ -39,7 +39,7 @@ app.post "/v0/search", (req, res, next) ->
   esclient.search(
     index: "contextscripts"
     body:
-      explain: true
+      #explain: true
       query:
         filtered:
           query:

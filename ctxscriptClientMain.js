@@ -97,7 +97,6 @@ var doSearch = function(q){
       var hitsAboveThreshold = resp.hits.filter(function(hit){
         return hit._score > (resp.max_score / 2);
       });
-      console.log(hitsAboveThreshold, resp);
       if(hitsAboveThreshold.length == 1) {
           evaluateResult(hitsAboveThreshold[0]);
           return;
@@ -116,7 +115,7 @@ var doSearch = function(q){
         $row.append(
           $button,
           $('<a class="ctxscript-source">source</a>').prop({
-            href: ctxscript.config.url + '/v0/scripts/' + result._id
+            href: ctxscript.config.url + '/scripts/' + result._id
           })
         );
         $results.append($row);

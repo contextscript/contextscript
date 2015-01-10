@@ -7,17 +7,19 @@ var $result = $(
     '<fieldset>' + 
       '<legend>' +
         '<button id="test" class="ctxscript-btn" style="display:inline;">' +
-        'Test run</button>' +
+        'Test Run</button>' +
       '</legend>' +
       '<div class="test-container"></div>' +
     '</fieldset>' +
     '<div class="ctxscript-btn-group">' +
-      '<button id="save" class="ctxscript-btn">save</button>' +
-      '<button id="publish" class="ctxscript-btn">publish</button>' +
+      '<button id="save" class="ctxscript-btn">Save</button>' +
+      '<button id="publish" class="ctxscript-btn">Publish</button>' +
+      ' <a href="https://github.com/contextscript/contextscript/blob/master/publishing.md" target="_blank">About Saving and Publishing</a>' +
     '</div>' +
   '</div>'
 );
 ctxscript.$el.append($result);
+//TODO: Creating loading notice
 System.import('ace/ace')
 .then(function(){
   return System.import('github:nodeca/js-yaml@master/dist/js-yaml');
@@ -29,7 +31,8 @@ System.import('ace/ace')
     prevContext = ctxscript.history.slice(-1)[0].context;
   }
   var contextEditor = ace.edit($result.find("#context")[0]);
-  //contextEditor.getSession().setMode("ace/mode/javascript");
+  //TODO: Make highlighting work
+  //contextEditor.getSession().setMode("ace/mode/yaml");
   contextEditor.renderer.setShowGutter(false);
   contextEditor.setOption("maxLines", 12);
   contextEditor.setOption("minLines", 2);

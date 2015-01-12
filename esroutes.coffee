@@ -2,23 +2,38 @@
 esclient = require('./esclient')
 app = require('./app')
 
-###
-The location queries require mappings.
-curl -XPUT 'http://localhost:9200/contextscripts/_mapping/contextscript' -d '
-{
-    "contextscript" : {
-        "properties" : {
-            "context.location.host" : {"type" : "string", "index" : "not_analyzed"},
-            "context.location.href" : {"type" : "string", "index" : "not_analyzed"}
-        }
-    }
-}
-'
-###
 app.post "/v0/search", (req, res, next) ->
   res.header "Access-Control-Allow-Origin", "*"
   res.header "Access-Control-Allow-Headers", "X-Requested-With"
-  must_terms = []
+  
+  #TODO: find all scriptIds the user has an override for.
+  userOverrides = []
+  
+  must_terms = [{
+    "or": [
+      {
+        term:
+          "savedBy": req.body.user.id
+      }
+      {
+        "and": [
+          {
+            term:
+              published: true
+          }
+          {
+            "not": 
+              ids:
+                values: userOverrides
+          }
+        ]
+      }
+      # TODO: Remove this, it is only for testing.
+      {
+        match_all: {}
+      }
+    ]
+  }]
   if req.body.context.location
     for prop of req.body.context.location
       term = {}
@@ -63,27 +78,65 @@ app.post "/v0/search", (req, res, next) ->
       "Content-Type": "text/plain"
     res.end JSON.stringify(result.hits)
 
+app.get "/v0/search", (req, res, next) ->
+  res.header "Access-Control-Allow-Origin", "*"
+  res.header "Access-Control-Allow-Headers", "X-Requested-With"
+  esclient.search(
+    index: "contextscripts"
+    body:
+      query: res.body.query
+      partial_fields:
+        partial1:
+          exclude: ["script"]
+  ).then(res.json)
+
 app.post "/v0/scripts", (req, res, next) ->
   res.header "Access-Control-Allow-Origin", "*"
   res.header "Access-Control-Allow-Headers", "X-Requested-With"
   
-  #TODO: Check use key
+  #TODO: Check user key
   #TODO: Context validation
   # Index is used so that the whole document is replaced
-  
-  #This will cause perf problems
+  #TODO: Get existing document with the id
+  #      if published or uname does not match,
+  #      create a new id and add prev-ctscript value.
   esclient.index(
     index: "contextscripts"
     type: "contextscript"
     id: req.body._id
+    #This will cause perf problems
     refresh: true
     body:
       context: req.body.context
       script: req.body.script
       lastModified: new Date()
-      lastModifiedBy: req.body.user
+      savedBy: req.body.user.id
   ).then (result) ->
     res.writeHead 200,
       "Content-Type": "text/plain"
 
     res.end JSON.stringify(result)
+
+ensureAuthenticated = (req, res, next) ->
+  if req.isAuthenticated()
+    next()
+  else
+    res.redirect('/login')
+
+app.get '/myscripts', ensureAuthenticated, (req, res, next) ->
+  console.log(req.user);
+  esclient.search(
+    index: "contextscripts"
+    body:
+      query:
+        term:
+          "savedBy": req.user.id
+      partial_fields:
+        partial1:
+          exclude: ["script"]
+  ).then (result) ->
+    res.render 'myscripts', {
+      user: req.user,
+      result: result
+    }
+  .catch(next)

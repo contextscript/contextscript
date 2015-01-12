@@ -4,17 +4,20 @@
         "npm": ">= 1.0.0"
     },
     "dependencies": {
-        "mongoskin":  ">= 0.0.0",
-        "mongodb": ">= 0.0.0",
         "express": ">= 3.0.0",
+        "method-override": ">= 0.0.0",
+        "morgan": ">= 0.0.0",
+        "express-session": ">= 0.0.0",
+        "express-partials": ">= 0.0.0",
         "handlebars": ">= 0.0.0",
         "winston": ">= 0.2.0",
         "passport": ">= 0.1.17",
-        "passport-google-oauth": ">= 0.0.0",
+        "passport-persona": ">= 0.0.0",
         "ejs": ">= 0.0.0",
         "body-parser": ">= 0.0.0",
         "elasticsearch": ">= 0.0.0",
-        "coffee-script": ">= 0.0.0"
+        "coffee-script": ">= 0.0.0",
+        "node-uuid": ">= 0.0.0"
     },
     "devDependencies": {
         "mocha" : ">= 0.0.0",

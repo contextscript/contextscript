@@ -1,0 +1,33 @@
+body {
+    margin: 0;
+    font: 14px arial, sans-serif;
+}
+.header {
+    background-color: #ADA;
+    border-bottom: 1px solid #5A5;
+}
+.header h1, .header h2 {
+    font-family: sans-serif;
+    margin: 0px 10px;
+    line-height: 38px;
+    color: white;
+    text-shadow: 1px 1px #5A5, 1px -1px #5A5, -1px -1px #5A5, -1px 1px #5A5, 0 0 1px #5A5;
+}
+.header a {
+    color: white;
+    text-decoration: none;
+}
+.main {
+    margin: 10px;
+}
+.login {
+    border-bottom: 1px solid lightgray;
+}
+.login .btn {
+    padding: 0px 10px;
+    color: green;
+    text-decoration: none;
+}
+.login .btn:hover {
+    text-decoration: underline;
+}

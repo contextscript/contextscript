@@ -1,0 +1,87 @@
+<script src="https://github.jspm.io/jmcriffey/bower-traceur@0.0.79/traceur.js"></script>
+<script src="https://github.jspm.io/ModuleLoader/es6-module-loader@0.10.0/dist/es6-module-loader.js"></script>
+<script src="https://jspm.io/system@0.11.js"></script>
+<script>
+//How to load the config??
+Promise.all([
+  System.import('jquery@2.1'),
+  System.import('ace/ace'),
+  System.import('github:nodeca/js-yaml@master/dist/js-yaml')
+]).then(function(all){
+  window.$ = all[0];
+  window.ace = all[1];
+  window.YAML = all[2];
+  var $result = $('.main');
+  var contextEditor = ace.edit($result.find("#context")[0]);
+  //TODO: Make highlighting work
+  //contextEditor.getSession().setMode("ace/mode/yaml");
+  contextEditor.renderer.setShowGutter(false);
+  contextEditor.setOption("maxLines", 12);
+  contextEditor.setOption("minLines", 2);
+  contextEditor.setOption("highlightActiveLine", false);
+  contextEditor.getSession().setValue(
+    YAML.dump({q:"Write a trigger phrase here..."}, 0, 2)
+  );
+  var scriptEditor = ace.edit($result.find("#script")[0]);
+  //scriptEditor.getSession().setMode("ace/mode/javascript");
+  scriptEditor.renderer.setShowGutter(false);
+  scriptEditor.setOption("maxLines", 12);
+  scriptEditor.setOption("minLines", 3);
+  scriptEditor.setOption("highlightActiveLine", false);
+  scriptEditor.getSession().setValue('ctxscript.$el.text("Hello World!");');
+  //var scriptId = ctxscript.config.user + '-' + Number(new Date());
+  $('#edit-area').find("#test").click(function ( e ) {
+    var $testContainer = $result.find('.test-container');
+    $testContainer.empty().html('<div class="ctxscript-result"></div>');
+    var script = scriptEditor.getSession().getValue();
+    var originalCtxscript = ctxscript;
+    (function(){
+      //Create a fake ctxscript variable for testing.
+      var ctxscript = Object.create(originalCtxscript);
+      ctxscript.$el = $testContainer;
+      var scriptResult = eval(
+        traceur.Compiler.script(script)
+      );
+    }());
+  });
+  var onLogin = function(){
+      $('#edit-area').find("#save").click(function ( e ) {
+        $(e.target).prop('disabled', true);
+        $(e.target).text("saving...");
+        $.post(ctxscript.config.url + '/v0/scripts', {
+          _id: scriptId,
+          context: YAML.safeLoad(contextEditor.getSession().getValue()),
+          script: scriptEditor.getSession().getValue(),
+          user: ctxscript.config.user,
+          key: ctxscript.config.key
+        }).fail(function(err){
+          alert(JSON.stringify(err));
+        }).always(function(resp){
+          $(e.target).prop('disabled', false);
+          $(e.target).text("save");
+        });
+      });
+  };
+}).catch(function(x) {
+  throw x;
+});
+</script>
+
+<div id="edit-area">
+  <h4>Context</h4>
+  <pre id="context" class="editor"></pre>
+  <h4>Script</h4>
+  <pre id="script" class="editor"></pre>
+  <fieldset>
+    <legend>
+      <button id="test" class="ctxscript-btn" style="display:inline;">
+      Test Run</button>
+    </legend>
+    <div class="test-container"></div>
+  </fieldset>
+  <div class="ctxscript-btn-group">
+    <button id="save" class="ctxscript-btn">Save</button>
+    <button id="publish" class="ctxscript-btn">Publish</button>
+     <a href="https://github.com/contextscript/contextscript/blob/master/publishing.md" target="_blank">About Saving and Publishing</a>
+  </div>
+</div>

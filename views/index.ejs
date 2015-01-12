@@ -1,0 +1,10 @@
+<script>
+$(function(){
+    //This executes the code as well
+    $.get("bookmarklet.js").then(function(content){
+        $(".main").append($('<a>').prop({
+            href: "javascript:" + encodeURI(content)
+        }).text("bookmarklet"));
+    });
+});
+</script>

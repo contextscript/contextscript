@@ -1,0 +1,14 @@
+<table>
+    <tr>
+        <th>Last Modified</th>
+        <th>Context</th>
+        <th>Published</th>
+    </tr>
+    <% result.hits.hits.forEach(function(hit){ %>
+    <tr>
+        <td><%= hit.fields.partial1[0].lastModified %></td>
+        <td><a href="/script/<%= hit._id %>"><%= JSON.stringify(hit.fields.partial1[0].context, 0, 2); %></a></td>
+        <td><%= (hit.fields.partial1[0].published ? "Yes" : "No") %></td>
+    </tr>
+    <% }); %>
+</table>

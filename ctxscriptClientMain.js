@@ -35,6 +35,12 @@ var doSearch = function(q){
     history: history,
     context: currentContext,
     config: config,
+    apiPost: function(path, options){
+      var newOptions = $.extend({}, options, {
+        user: config.user
+      });
+      return $.post(this.config.url + path, newOptions);
+    },
     setResult: function(value){
       //TODO: This should only happen once.
       this.result = value;
@@ -75,10 +81,8 @@ var doSearch = function(q){
       traceur.Compiler.script(result._source.script)
     );
   };
-  $.post(config.url + "/v0/search", {
-    context: currentContext,
-    user: config.user,
-    key: config.key
+  ctxscript.apiPost("/v0/search", {
+    context: currentContext
   }).success(function(rawResp){
     ctxscript.$el.empty();
     historyItem.response = JSON.parse(rawResp);
@@ -154,9 +158,10 @@ $(document).on('keypress', '#ctxscript-q', function(e) {
 });
 $('.ctxscript-invoke').prop('disabled', false);
 $('.ctxscript-settings-btn').prop('disabled', false);
-var $suggestions = $('<div class="ctxscript-box">');
-$suggestions.append('<sup>suggestions:</sup>');
-$('.ctxscript-container').append($suggestions);
+//TODO: Create suggestions box
+//var $suggestions = $('<div class="ctxscript-box">');
+//$suggestions.append('<sup>suggestions:</sup>');
+//$('.ctxscript-container').append($suggestions);
 });
 });
 };

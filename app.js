@@ -19,7 +19,6 @@ passport.serializeUser(function(user, done) {
 });
 
 passport.deserializeUser(function(email, done) {
-  
   esclient.search({
       index: "users",
       body: {
@@ -30,10 +29,11 @@ passport.deserializeUser(function(email, done) {
         }
       }
     }).then(function(result){
+      if(result.hits.hits.length === 0) return done("No user found");
       var userInfo = result.hits.hits[0]._source;
       userInfo.id = result.hits.hits[0]._id;
       done(null, userInfo);
-    });
+    }).catch(done);
 });
 
 passport.use(new PersonaStrategy({

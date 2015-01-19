@@ -7,31 +7,11 @@ var app = require('./app');
 
 require('./esroutes');
 
-app.get('/bookmarklet.js', function(req, res, next) {
-  var markletConfig = {
-    url: config.serverUrl
-  };
-  if(req.user) {
-    markletConfig.user = req.user;
-  }
-  fs.readFile('bookmarklet.source.js', 'utf8', function(err, script){
-    if(err) return next(err);
-    fs.readFile('ctxscript-core.css', function(err, css){
-      if(err) return next(err);
-      var cssLoadCode = "var ss = document.createElement('link');";
-      cssLoadCode += "ss.rel = 'stylesheet';";
-      cssLoadCode += "ss.href = 'data:text/css," + escape(css) + "';";
-      cssLoadCode += "document.documentElement.childNodes[0].appendChild(ss);\n";
-      res.writeHead(200, {'Content-Type': 'text/javascript'});
-      res.end(cssLoadCode + script + "(" + JSON.stringify(markletConfig) +")");
-    });
-  });
-});
-
 var mainJs = fs.readFileSync('ctxscriptClientMain.js', 'utf8');
 app.get('/main.js', function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "X-Requested-With");
+  if(config.debug) mainJs = fs.readFileSync('ctxscriptClientMain.js', 'utf8');
   res.writeHead(200, {'Content-Type': 'text/javascript'});
   res.end(mainJs);
 });

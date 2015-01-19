@@ -1,14 +1,14 @@
 <table>
     <tr>
-        <th>Last Modified</th>
         <th>Context</th>
         <th>Published</th>
+        <th>Last Modified</th>
     </tr>
     <% result.hits.hits.forEach(function(hit){ %>
     <tr>
-        <td><%= hit.fields.partial1[0].lastModified %></td>
-        <td><a href="/script/<%= hit._id %>"><%= JSON.stringify(hit.fields.partial1[0].context, 0, 2); %></a></td>
-        <td><%= (hit.fields.partial1[0].published ? "Yes" : "No") %></td>
+        <td><a href="/contextscripts/<%= hit._id %>"><%= hit._source.context.q %></a></td>
+        <td><%= (hit._source.published ? "Yes" : "No") %></td>
+        <td><%= hit._source.lastModified %></td>
     </tr>
     <% }); %>
 </table>

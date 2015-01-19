@@ -1,0 +1,17 @@
+<div id="container"></div>
+<link rel="stylesheet" type="text/css" href="/ctxscript-core.css" />
+<script src="/injectContextScript.js"></script>
+<style>
+#container .ctxscript-box {
+  float: none !important;
+}
+</style>
+<script>
+injectContextScript(<%- JSON.stringify(config) %>, {
+  scriptId: "createScript",
+  args: {
+    id: "<%- id %>"
+  },
+  container: document.getElementById("container")
+});
+</script>

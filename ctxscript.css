@@ -46,9 +46,9 @@
   margin-left: 6px;
   display: inline;
 }
-/* editor specific sytles */
-.editor {
-  border: 1px solid lightgray;
+.ctxscript-btn-group button:first-child {
+  margin-left: 0;
+  display: inline;
 }
 .ctxscript-result textarea {
   margin: auto;
@@ -60,11 +60,4 @@
 }
 .ctxscript-result:empty {
   display: none;
-}
-.ctxscript-container fieldset {
-  margin: 0 -3px;
-  padding: 4px;
-  border: 1px solid black;
-  border-left: 0;
-  border-right: 0;
 }

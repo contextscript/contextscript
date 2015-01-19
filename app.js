@@ -55,6 +55,7 @@ passport.use(new PersonaStrategy({
       };
       if (result.hits.hits.length === 0) {
         userInfo.key = uuid.v4();
+        //TODO: TOS
         return esclient.index({
           index: "users",
           type: "user",
@@ -90,12 +91,23 @@ app.use(passport.initialize());
 app.use(passport.session());
 //app.use(app.router);
 app.use(express.static(__dirname + '/static'));
-//error handling should come last
-//app.use(express.errorHandler({showStack: true, dumpExceptions: true}));
 app.use(partials());
+app.use(function(err, req, res, next) {
+  if (req.xhr) {
+    res.status(500).send({ error: 'Something blew up!' });
+  } else {
+    next(err);
+  }
+});
 
 app.get('/', function(req, res){
-  res.render('index', { user: req.user });
+  res.render('index', {
+    user: req.user,
+    config: {
+      url: config.serverUrl,
+      user: req.user
+    }
+  });
 });
 
 app.get('/login', function(req, res){

@@ -1,10 +1,27 @@
 <script>
 $(function(){
     //This executes the code as well
-    $.get("bookmarklet.js").then(function(content){
+    $.when(
+        $.get("/injectContextScript.js"),
+        $.get("/ctxscript-core.css")
+    ).then(function(injectScript, coreCSS){
+        injectScript = injectScript[0];
+        coreCSS = coreCSS[0];
+        var config = <%- JSON.stringify(config) %>;
+        var cssLoadCode = "var ss = document.createElement('link');";
+        config.waitForEvent = 'showCtxscript';
+        cssLoadCode += "ss.rel = 'stylesheet';";
+        cssLoadCode += "ss.href = 'data:text/css," + escape(coreCSS) + "';";
+        cssLoadCode += "document.documentElement.childNodes[0].appendChild(ss);";
+        cssLoadCode += "ss.addEventListener('load', function(){ document.dispatchEvent(new Event('showCtxscript')) }, false);\n"
+        script = (
+            cssLoadCode +
+            injectScript +
+            "injectContextScript(" + JSON.stringify(config) +");"
+        );
         $(".main").append($('<a>').prop({
-            href: "javascript:" + encodeURI(content)
-        }).text("bookmarklet"));
+            href: "javascript:" + encodeURI(script)
+        }).text("Context Script"));
     });
 });
 </script>

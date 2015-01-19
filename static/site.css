@@ -31,3 +31,12 @@ body {
 .login .btn:hover {
     text-decoration: underline;
 }
+table {
+    border: 1px solid gray;
+    width: 100%;
+    border-collapse:collapse;
+    border-spacing:0;
+}
+table td, table th {
+    border: 1px solid gray;
+}

@@ -7,7 +7,7 @@
   padding: 0;
   /* This prevents boxes from being cutoff when scrollbars are present */
   padding-left: 14px;
-  z-index: 100;
+  z-index: 9999;
   /*background: rgba(255, 255, 255, 0.4);*/
   font: 14px arial, sans-serif;
 }
@@ -26,6 +26,7 @@
 #ctxscript-q {
   padding: 2px;
   width: 350px;
+  box-sizing: content-box;
 }
 .ctxscript-invoke, .ctxscript-settings-btn {
   margin-left: 2px;

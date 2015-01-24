@@ -29,7 +29,13 @@ var createCtxscriptAPI = function(extras){
       var $resultContainer = this.$el.find('.ctxscript-result');
       if($resultContainer.length > 0) {
         $resultContainer.append('<h4>Result:</h4>');
-        $resultContainer.append($('<textarea readonly=true>').text(value));
+        if($.type(value) === "string") {
+          $resultContainer.append($('<textarea readonly=true>').text(value));
+        } else {
+          //TODO: Display result with JSON tree viewer.
+          $resultContainer.append($('<textarea readonly=true>')
+            .text(JSON.stringify(value, 0, 2)));
+        }
       }
     },
     resultPromise: resultPromise
@@ -138,8 +144,8 @@ var doSearch = function(q){
     console.log(error);
     ctxscript.$el.html(
         '<h4>Error</h4>' +
-        '<p>Message: ' +
-          msg +
+        '<p>' +
+          error.status + ": " + error.statusText +
         '</p>'
     );
   });

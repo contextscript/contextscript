@@ -34,9 +34,10 @@ let template = (templateContext)=>{
       .ctxscript-editor fieldset {
         margin: 0 -3px;
         padding: 4px;
-        border: 1px solid black;
+        border: 1px solid gray;
         border-left: 0;
         border-right: 0;
+        box-shadow: inset 0px 0px 2px gray;
       }
     </style>
     <div class="ctxscript-editor">

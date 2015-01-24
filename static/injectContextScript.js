@@ -1,8 +1,12 @@
 var injectContextScript = function(config, options){
 //If ctxscript was previously closed, just reopen the old instance.
-var containers = document.getElementsByClassName('ctxscript-container');
-if(containers.length > 0) {
-  containers[0].style.display = "";
+var container = document.querySelector('.ctxscript-container');
+if(container) {
+  if(container.style.display === "none") {
+    container.style.display = "";
+  } else {
+    container.style.display = "none";
+  }
   return;
 }
 //Set defaults
@@ -14,23 +18,29 @@ if(!options.container) {
 var link = document.createElement("link");
 link.rel="stylesheet";
 link.href = config.url + "/ctxscript.css";
-var showCtxscript = function(){
-  options.container.innerHTML = '<div id="ctxscript-out"></div>' +
-    '<div class="ctxscript-box">' +
-    '<input id="ctxscript-q"></input>' +
-    '<button class="ctxscript-invoke" disabled=disabled>&gt;</button>' +
-    '<button class="ctxscript-settings-btn" disabled=disabled>≡</button>' +
-    '<div class="ctxscript-settings" style="display:none;"><p class="ctxscript-close">Close</p></div>' +
-    '</div>';
-  var body = document.getElementsByTagName('body')[0];
-  body.appendChild(options.container);
-  document.getElementById('ctxscript-q').focus();
-};
-if(config.waitForEvent) {
-  document.addEventListener(config.waitForEvent, showCtxscript);
-} else {
-  showCtxscript();
+
+options.container.innerHTML = '<div id="ctxscript-out"></div>' +
+  '<div class="ctxscript-box">' +
+  '<input id="ctxscript-q"></input>' +
+  '<button class="ctxscript-invoke" disabled=disabled>&gt;</button>' +
+  '<button class="ctxscript-settings-btn" disabled=disabled>≡</button>' +
+  '<div class="ctxscript-settings" style="display:none;"><p class="ctxscript-close">Close</p></div>' +
+  '</div>';
+var body = document.getElementsByTagName('body')[0];
+body.appendChild(options.container);
+//Wait for the the injected css to start styling.
+var qBox = options.container.querySelector('#ctxscript-q');
+function waitForStyles(){
+  window.setTimeout(function(){
+    if(qBox.offsetTop < 10) {
+      qBox.focus();
+    } else {
+      waitForStyles();
+    }
+  }, 900);
 }
+waitForStyles();
+
 document.body.appendChild(link);
 var lst = function(path) {
   return function(){

@@ -9,7 +9,6 @@ $(function(){
         coreCSS = coreCSS[0];
         var config = <%- JSON.stringify(config) %>;
         var cssLoadCode = "var ss = document.createElement('link');";
-        config.waitForEvent = 'showCtxscript';
         cssLoadCode += "ss.rel = 'stylesheet';";
         cssLoadCode += "ss.href = 'data:text/css," + escape(coreCSS) + "';";
         cssLoadCode += "document.documentElement.childNodes[0].appendChild(ss);";

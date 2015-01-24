@@ -50,15 +50,61 @@ var createBox = function(output){
 $mainContainer.on('click', '.ctxscript-search-btn', function ( e ) {
   doSearch($(e.target).text());
 });
+//Preload:
+System.import("handlebars")
+System.import("github:nathanathan/fuzzyTemplateMatcher@gh-pages/fuzzyTemplateMatcher");
 var evaluateResult = function(result, ctxscript, extraArgs){
+Promise.all([
+  System.import("handlebars"),
+  System.import("github:nathanathan/fuzzyTemplateMatcher@gh-pages/fuzzyTemplateMatcher")
+])
+.then(function(imports){
+  var handlebars = imports[0];
+  var ftm = imports[1];
   ctxscript.meta = result;
   ctxscript.$el.addClass("ctxscript-bar");
-  //TODO Fill in template variables
   ctxscript.args = $.extend({}, extraArgs, {});
-  var title = result._source.context.q;
-  if($.isArray(title)) {
-    title = title.join(', ');
+  var titleText;
+  var q = result._source.context.q;
+  var requestQ;
+  if(ctxscript.context) requestQ = ctxscript.context.q;
+  if($.isArray(q)) {
+    if(!requestQ) {
+      //If there is not request q, use any user supplied args to compare
+      //choose the best matching title q.
+      var bestCount;
+      q.forEach(function(qItem){
+        var matchingKeys = ftm("", qItem).vars.reduce(function(sofar, cur){
+          return sofar + (cur.vName in ctxscript.args ? 1 : 0);
+        }, 0);
+        if(!bestCount || matchingKeys > bestCount) {
+          titleText = qItem;
+          bestCount = matchingKeys;
+        }
+      });
+    } else {
+      var bestMatch;
+      q.forEach(function(qItem){
+        var ftmResult = ftm(requestQ, qItem);
+        if(!bestMatch || ftmResult.adjustedLd < bestMatch.adjustedLd) {
+          titleText = qItem;
+          bestMatch = ftmResult;
+        }
+      });
+      var newArgs = {};
+      bestMatch.vars.forEach(function(v){
+        newArgs[v.vName] = v.value;
+      });
+      ctxscript.args = $.extend(newArgs, ctxscript.args);
+    }
+  } else {
+    titleText = result._source.context.q;
   }
+  var quotedArgContext = {};
+  Object.keys(ctxscript.args).forEach(function(argName){
+    quotedArgContext[argName] = "{{" + ctxscript.args[argName] + "}}";
+  });
+  var title = handlebars.compile(titleText)(quotedArgContext);
   ctxscript.$el.append($('<h1>').text(title));
   var $controls = $('<div class="ctxscript-controls">');
   $controls.append(
@@ -79,6 +125,7 @@ var evaluateResult = function(result, ctxscript, extraArgs){
   eval(
     traceur.Compiler.script(result._source.script)
   );
+});
 };
 var doSearch = function(q){
   var currentContext = Object.create(context);

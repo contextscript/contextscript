@@ -11,6 +11,7 @@ session = require("express-session")
 partials = require("express-partials")
 uuid = require("node-uuid")
 Promise = require('promise')
+validate = require('jsonschema').validate
 
 # Passport session setup.
 #   To support persistent login sessions, Passport needs to be able to
@@ -210,27 +211,58 @@ app.post "/v0/search", allowXorigin, (req, res, next) ->
     res.json result.hits
 
 app.post "/v0/scripts", allowXorigin, requireUserKey, (req, res, next) ->
-  #TODO: Context validation
-  # Index is used so that the whole document is replaced
-  #TODO: Get existing document with the id
-  #      if published or uname does not match,
-  #      create a new id and add prev-ctscript value.
-  esclient.index(
+  jsvResult = validate(req.body.context, {
+    type: "object"
+    properties:
+      q:
+        type: [ "string", "array" ]
+      location:
+        type: "object"
+        properties:
+          host: { type: "string" }
+          href: { type: "string" }
+      prevResultSchema:
+        type: "object"
+      prevContextScript:
+        type: "string"
+		required: ["q"]
+		additionalProperties: false
+  })
+  if(!jsvResult.valid)
+    res.status(400).send({ error: jsvResult.errors.map((e)-> e.message) })
+    return
+  saveScript = ()->
+    esclient.index(
+      index: "contextscripts"
+      type: "contextscript"
+      id: req.body._id
+      # This will cause perf problems
+      refresh: true
+      body:
+        context: req.body.context
+        script: req.body.script
+        lastModified: new Date()
+        savedBy: req.body.user.id
+        # Provided if the script is forked from another
+        # and publishing should overwrite it.
+        baseScriptId: req.body.baseScriptId
+    )
+    .then (result) ->
+      res.json(result)
+    .catch (e)-> next(e)
+  esclient.get(
     index: "contextscripts"
     type: "contextscript"
     id: req.body._id
-    #This will cause perf problems
-    refresh: true
-    body:
-      context: req.body.context
-      script: req.body.script
-      lastModified: new Date()
-      savedBy: req.body.user.id
-  ).then (result) ->
-    res.json(result)
+  )
+  .then (script)->
+    if script._source.savedBy != req.body.user.id
+      res.status(401).send({ error: 'Only the creator can save this script.' })
+    else
+      saveScript()
+  .catch -> saveScript()
 
 app.get "/v0/contextscripts/:id", allowXorigin, (req, res, next) ->
-  console.log(13)
   esclient.get(
     index: "contextscripts"
     type: "contextscript"
@@ -311,7 +343,12 @@ server = app.listen port, ipaddr, ->
         body:
           published: true
           context:
-            q: "Create a script for this context"
+            q: [
+              "Edit script with id {{id}}"
+              "Create a script"
+              "Create a script for this context"
+              "Create a script from this one"
+            ]
           script: createScriptCode
     .then ->
       console.log "create script inserted"

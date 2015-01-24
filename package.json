@@ -18,7 +18,8 @@
         "elasticsearch": ">= 0.0.0",
         "coffee-script": ">= 0.0.0",
         "node-uuid": ">= 0.0.0",
-        "promise": ">= 0.0.0"
+        "promise": ">= 0.0.0",
+        "jsonschema": ">= 0.0.0"
     },
     "devDependencies": {
         "mocha" : ">= 0.0.0",

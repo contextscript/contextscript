@@ -11,7 +11,7 @@ System.import("jquery@2.1").then(function(jQuery) {
 var $ = jQuery;
 $(function(){
 var $mainContainer = $(options.container);
-var createCtxscriptAPI = function(extras){
+var createContextScriptAPI = function(extras){
   var __resolveResult;
   var resultPromise = new Promise(function(resolveResult){
     __resolveResult = resolveResult;
@@ -38,6 +38,20 @@ var createCtxscriptAPI = function(extras){
         }
       }
     },
+    getPrevHistItem: function(){
+      if(!this.history || history.length === 0) return null;
+      return this.history.slice(-1)[0];
+    },
+    getPrevResultPromise: function(){
+      var prevHistItem = this.getPrevHistItem();
+      if(prevHistItem) return prevHistItem.resultPromise();
+      return null;
+    },
+    getPrevEvaledCtxScript: function(){
+      var prevHistItem = this.getPrevHistItem();
+      if(prevHistItem) return prevHistItem.evaledCtxScript;
+      return null;
+    },
     resultPromise: resultPromise
   }, extras);
 };
@@ -53,7 +67,7 @@ $mainContainer.on('click', '.ctxscript-search-btn', function ( e ) {
 //Preload:
 System.import("handlebars")
 System.import("github:nathanathan/fuzzyTemplateMatcher@gh-pages/fuzzyTemplateMatcher");
-var evaluateResult = function(result, ctxscript, extraArgs){
+var evalContextScript = function(result, cxsAPI, extraArgs){
 Promise.all([
   System.import("handlebars"),
   System.import("github:nathanathan/fuzzyTemplateMatcher@gh-pages/fuzzyTemplateMatcher")
@@ -61,13 +75,15 @@ Promise.all([
 .then(function(imports){
   var handlebars = imports[0];
   var ftm = imports[1];
-  ctxscript.meta = result;
-  ctxscript.$el.addClass("ctxscript-bar");
-  ctxscript.args = $.extend({}, extraArgs, {});
-  var titleText;
+  if(cxsAPI.currentHistoryItem) {
+    cxsAPI.currentHistoryItem.evaledCtxScript = result;
+  }
+  cxsAPI.$el.addClass("ctxscript-bar");
+  cxsAPI.args = $.extend({}, extraArgs, {});
+  var chosenQItem;
   var q = result._source.context.q;
   var requestQ;
-  if(ctxscript.context) requestQ = ctxscript.context.q;
+  if(cxsAPI.context) requestQ = cxsAPI.context.q;
   if($.isArray(q)) {
     if(!requestQ) {
       //If there is not request q, use any user supplied args to compare
@@ -75,10 +91,10 @@ Promise.all([
       var bestCount;
       q.forEach(function(qItem){
         var matchingKeys = ftm("", qItem).vars.reduce(function(sofar, cur){
-          return sofar + (cur.vName in ctxscript.args ? 1 : 0);
+          return sofar + (cur.vName in cxsAPI.args ? 1 : 0);
         }, 0);
         if(!bestCount || matchingKeys > bestCount) {
-          titleText = qItem;
+          chosenQItem = qItem;
           bestCount = matchingKeys;
         }
       });
@@ -87,7 +103,7 @@ Promise.all([
       q.forEach(function(qItem){
         var ftmResult = ftm(requestQ, qItem);
         if(!bestMatch || ftmResult.adjustedLd < bestMatch.adjustedLd) {
-          titleText = qItem;
+          chosenQItem = qItem;
           bestMatch = ftmResult;
         }
       });
@@ -95,36 +111,40 @@ Promise.all([
       bestMatch.vars.forEach(function(v){
         newArgs[v.vName] = v.value;
       });
-      ctxscript.args = $.extend(newArgs, ctxscript.args);
+      cxsAPI.args = $.extend(newArgs, cxsAPI.args);
     }
   } else {
-    titleText = result._source.context.q;
+    chosenQItem = result._source.context.q;
   }
+  cxsAPI.qItem = chosenQItem;
   var quotedArgContext = {};
-  Object.keys(ctxscript.args).forEach(function(argName){
-    quotedArgContext[argName] = "{{" + ctxscript.args[argName] + "}}";
+  Object.keys(cxsAPI.args).forEach(function(argName){
+    quotedArgContext[argName] = "{{" + cxsAPI.args[argName] + "}}";
   });
-  var title = handlebars.compile(titleText)(quotedArgContext);
-  ctxscript.$el.append($('<h1>').text(title));
+  var title = handlebars.compile(chosenQItem)(quotedArgContext);
+  cxsAPI.$el.append($('<h1>').text(title));
   var $controls = $('<div class="ctxscript-controls">');
   $controls.append(
     //TODO: Hook this button up.
     $('<a class="ctxscript-source" target="_blank">Alternative Scripts</a>'),
     $('<a class="ctxscript-source" target="_blank">Show Source</a>').prop({
-      href: ctxscript.config.url + '/contextscripts/' + result._id,
+      href: cxsAPI.config.url + '/contextscripts/' + result._id,
     })
   );
   $controls.hide();
-  ctxscript.$el.append($controls);
+  cxsAPI.$el.append($controls);
   //TODO: Create a button for toggling the controls.
-  ctxscript.$el.click(function(){
+  cxsAPI.$el.click(function(){
     $controls.toggle();
   });
-  ctxscript.$el = createBox();
-  ctxscript.$el.append('<div class="ctxscript-result"></div>');
+  cxsAPI.$el = createBox();
+  cxsAPI.$el.append('<div class="ctxscript-result"></div>');
   eval(
     traceur.Compiler.script(result._source.script)
   );
+  //Cause the side pane to scroll down to show the input box.
+  //TODO: this doesn't quite work...
+  $mainContainer.scrollTop($mainContainer[0].scrollHeight);
 });
 };
 var doSearch = function(q){
@@ -132,30 +152,31 @@ var doSearch = function(q){
   currentContext.q = q;
   //Beware that the result might not be present.
   var historyItem = {
-    context: currentContext
+    searchContext: currentContext
   };
   createBox('<span class="ctxscript-arrow">&gt;</span>' + q)
     .addClass("ctxscript-prev");
-  var ctxscript = createCtxscriptAPI({
+  var cxsAPI = createContextScriptAPI({
     $el: createBox('Loading...'),
     history: history,
-    context: currentContext
+    context: currentContext,
+    currentHistoryItem: historyItem
   });
-  historyItem.resultPromise = ctxscript.resultPromise;
+  historyItem.resultPromise = cxsAPI.resultPromise;
   
-  ctxscript.apiPost("/v0/search", {
+  cxsAPI.apiPost("/v0/search", {
     context: currentContext
   }).success(function(resp){
     historyItem.response = resp;
-    ctxscript.$el.empty();
+    cxsAPI.$el.empty();
     if (resp.hits.length === 0) {
-      ctxscript.$el.append(
+      cxsAPI.$el.append(
         '<h4>No scripts found</h4>' +
         '<button class="ctxscript-btn ctxscript-search-btn">Create a script for this context</button>' +
         '<button class="ctxscript-btn ctxscript-search-btn">Request a script for this context</button>'
       );
     } else if (resp.hits.length === 1) {
-      evaluateResult(resp.hits[0], ctxscript);
+      evalContextScript(resp.hits[0], cxsAPI);
     } else {
       // If there is one hit with a much higher score than the others
       // that will be shown instead of the multiple result list.
@@ -163,33 +184,33 @@ var doSearch = function(q){
         return hit._score > (resp.max_score / 2);
       });
       if(hitsAboveThreshold.length == 1) {
-          evaluateResult(hitsAboveThreshold[0], ctxscript);
+          evalContextScript(hitsAboveThreshold[0], cxsAPI);
           return;
       }
       //TODO Creation dates and other meta-data
-      ctxscript.$el.append("<h4>Multiple results:</h4>");
+      cxsAPI.$el.append("<h4>Multiple results:</h4>");
       var $results = $("<ul>");
       resp.hits.forEach(function(result){
         var $row = $('<li>');
         var $button = $('<button class="ctxscript-btn">')
           .text(result._source.context.q);
         $button.click(function(){
-          ctxscript.$el.empty();
-          evaluateResult(result, ctxscript);
+          cxsAPI.$el.empty();
+          evalContextScript(result, cxsAPI);
         });
         $row.append(
           $button,
           $('<a class="ctxscript-source">source</a>').prop({
-            href: ctxscript.config.url + '/contextscripts/' + result._id
+            href: cxsAPI.config.url + '/contextscripts/' + result._id
           })
         );
         $results.append($row);
       });
-      ctxscript.$el.append($results);
+      cxsAPI.$el.append($results);
     }
   }).fail(function(error, msg){
     console.log(error);
-    ctxscript.$el.html(
+    cxsAPI.$el.html(
         '<h4>Error</h4>' +
         '<p>' +
           error.status + ": " + error.statusText +
@@ -228,19 +249,20 @@ $mainContainer.find('.ctxscript-settings-btn').prop('disabled', false);
 if(options.scriptId) {
   var currentContext = Object.create(context);
   var historyItem = {
-    context: currentContext
+    searchContext: currentContext
   };
-  var ctxscript = createCtxscriptAPI({
+  var cxsAPI = createContextScriptAPI({
     $el: createBox('Loading...'),
     history: history,
-    context: currentContext
+    context: currentContext,
+    currentHistoryItem: historyItem
   });
-  historyItem.resultPromise = ctxscript.resultPromise;
+  historyItem.resultPromise = cxsAPI.resultPromise;
   $.getJSON(config.url + '/v0/contextscripts/' + options.scriptId)
   .success(function(result){
     historyItem.response = result;
-    ctxscript.$el.empty();
-    evaluateResult(result, ctxscript, options.args);
+    cxsAPI.$el.empty();
+    evalContextScript(result, cxsAPI, options.args);
   });
   history = history.concat(historyItem);
 }

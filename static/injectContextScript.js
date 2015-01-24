@@ -20,7 +20,7 @@ link.rel="stylesheet";
 link.href = config.url + "/ctxscript.css";
 
 options.container.innerHTML = '<div id="ctxscript-out"></div>' +
-  '<div class="ctxscript-box">' +
+  '<div class="ctxscript-box" style="margin-bottom: 200px;">' +
   '<input id="ctxscript-q"></input>' +
   '<button class="ctxscript-invoke" disabled=disabled>&gt;</button>' +
   '<button class="ctxscript-settings-btn" disabled=disabled>≡</button>' +

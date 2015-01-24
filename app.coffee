@@ -256,6 +256,7 @@ app.post "/v0/scripts", allowXorigin, requireUserKey, (req, res, next) ->
     id: req.body._id
   )
   .then (script)->
+    # TODO: Add forking
     if script._source.savedBy != req.body.user.id
       res.status(401).send({ error: 'Only the creator can save this script.' })
     else

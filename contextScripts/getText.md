@@ -8,7 +8,7 @@ var n;
 var text;
 while(n=walk.nextNode()) {
   if(n.classList && (n.classList.contains('ctxscript-container'))) {
-    n = walk.nextSibling();console.log(123);
+    n = walk.nextSibling();
   }
   if(n.nodeType !== 3) continue;
   if(n.parentElement.tagName in {"STYLE":"", "SCRIPT":"", "NOSCRIPT":""}) continue;

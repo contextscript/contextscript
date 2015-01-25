@@ -353,7 +353,7 @@ server = app.listen port, ipaddr, ->
               .catch(reject)
       )
     .then ->
-      console.log "create script inserted"
+      console.log "base scripts indexed"
     .catch (e)->
       console.log("ERROR:", e)
       server.close()

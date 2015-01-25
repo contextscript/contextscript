@@ -34,6 +34,10 @@ $.ajax({
 }),
 System.import("underscore")
 ]).then(([resp,_])=>{
+    if(!resp.Resources || resp.Resources.length === 0) {
+        cxsAPI.$el.html("No Starfleet engineers found.");
+        return;
+    }
     cxsAPI.$el.html(`<ul>
     ${
         _.chain(resp.Resources)

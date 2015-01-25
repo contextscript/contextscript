@@ -1,22 +1,24 @@
 <% if (!user) { %>
 <div class="panel">
-    <img src="walkthrough/1.png" />
+    <img src="walkthrough/1.png" style="opacity:0.7;" />
     <div class="caption">
-    Imagine reading the Wikipedia article about <i>Star Trek: The Next Generation</i>
-    and trying to find all the Starfleet engineers it mentions.
+    Imagine trying to find all the Starfleet engineers mentioned in the
+    Wikipedia article about <i>Star Trek: The Next Generation</i>.
     </div>
 </div>
 <div class="panel">
     <img src="walkthrough/2.png" />
     <div class="caption">
-    The Context Script bookmarklet can run scripts that will find them for you.
+    The Context Script bookmarklet can run a program that will find them for you.<br />
+    <small>(The Context Script bookmarklet doesn't just find Starfleet engineers,
+    it can run any script that helps people interact with the web.)</small>
     </div>
 </div>
 <div class="panel">
     <img src="walkthrough/3.png" />
     <div class="caption">
-    In this example, there is no Context Script for finding Starfleet engineers.
-    So, we will create a new one for the task.
+    I did not create a Context Script for finding Starfleet engineers prior to creating this demo
+    so that we can walk through the process of making it.
     </div>
 </div>
 <div class="panel">
@@ -30,32 +32,35 @@
 <div class="panel">
     <img src="walkthrough/6.png" />
     <div class="caption">
-    The DBpedia Spotlight API be used identify all the Starfleet engineers in the page text
-    (as well as many other concepts and entities).
+    Our script will send the page text to the DBpedia Spotlight API. Spotlight
+    annotates the concepts and entities in the text that are related to the
+    given category. I will skip over the data munging that happens afterwards.
     </div>
 </div>
 <div class="panel">
     <img src="walkthrough/7.png" />
     <div class="caption">
-    Once the script is saved the creator can find Starfleet engineers mentioned
-    on any website they visit.
-    And when the script is published so can you.
+    Once the script has been saved the creator can use it to find 
+    Starfleet engineers mentioned on any website they visit.
+    And, when the script is published, so can you.
     </div>
 </div>
 <div class="panel">
     <div class="bookmarklet-area"></div>
     <div class="caption">
-        You can use the bookmarklet in this panel to try Content Script.
-        <strong>However, it will not allow you to save scripts.</strong>
-        To save scripts you must sign in. Then you will be given a link to
-        a bookmarklet tied to your account.
+    You can use the bookmarklet in this panel to try Content Script.
+    (Drag it onto your bookmark bar to use it.)
+    <strong>However, it will not allow you to save scripts.</strong>
+    To save scripts you must sign in. Then you will be given a link to
+    a bookmarklet that is tied to your account.
     </div>
 </div>
 <% } else { %>
 <div class="panel">
     <div class="bookmarklet-area"></div>
     <div class="caption">
-        Here is a Context Script bookmarklet linked to your account:
+    Here is a Context Script bookmarklet that is linked to your account.
+    (Drag it onto your bookmark bar to use it.):
     </div>
 </div>
 <% } %>

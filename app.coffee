@@ -38,7 +38,6 @@ passport.deserializeUser (email, done) ->
 passport.use new PersonaStrategy(
   audience: config.serverUrl
 , (email, done) ->
-  
   #TODO: TOS
   esclient.search(
     index: "users"
@@ -82,11 +81,6 @@ app.use passport.initialize()
 app.use passport.session()
 app.use express.static(__dirname + "/static")
 app.use partials()
-app.use (err, req, res, next) ->
-  if req.xhr
-    res.status(500).send error: "Something blew up!"
-  else
-    next err
 
 #### Middleware helpers ####
 #TODO Index on users

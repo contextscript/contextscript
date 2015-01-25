@@ -42,7 +42,7 @@ table td, table th {
 }
 .panel {
     position: relative;
-    display: inline-block;
+    max-width: 795px;
     border: 1px solid darkgray;
     margin-bottom: 5px;
     margin: auto;
@@ -50,7 +50,6 @@ table td, table th {
 }
 .panel img {
     width: 100%;
-    max-width: 795px;
 }
 .caption {
     font-size: 1.1em;
@@ -63,7 +62,6 @@ table td, table th {
     box-sizing: border-box;
 }
 .bookmarklet-area {
-    width: 500px;
     padding: 200px 0;
     text-align: center;
 }

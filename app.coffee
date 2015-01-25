@@ -332,6 +332,7 @@ server = app.listen port, ipaddr, ->
       return Promise.all([
         "contextScripts/createScript.md"
         "contextScripts/getText.md"
+        "contextScripts/starfleet.md"
       ].map (curPath) ->
         return new Promise (resolve, reject)->
           yamlhead curPath, (err, yaml, content)->

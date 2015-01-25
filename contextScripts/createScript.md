@@ -88,7 +88,7 @@ Promise.all([
   
   var qItemMap = {
     "Edit script with id {{id}}" : ()=>{
-      $.extend(createdContext, myContextScript._source.context, true);
+      $.extend({}, myContextScript._source.context, true);
       createdScript = myContextScript._source.script;
       scriptId = myContextScript._id;
     },
@@ -105,7 +105,7 @@ Promise.all([
     "Create a script from this one" : ()=>{
       let prevCtxScript = cxsAPI.getPrevEvaledCtxScript();
       if(prevCtxScript) {
-        $.extend(createdContext, prevCtxScript._source.context, true);
+        $.extend({}, prevCtxScript._source.context, true);
         createdScript = prevCtxScript._source.script;
       } else {
         alert("Which one?");

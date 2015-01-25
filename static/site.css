@@ -40,3 +40,30 @@ table {
 table td, table th {
     border: 1px solid gray;
 }
+.panel {
+    position: relative;
+    display: inline-block;
+    border: 1px solid darkgray;
+    margin-bottom: 5px;
+    margin: auto;
+    margin-bottom: 10px;
+}
+.panel img {
+    width: 100%;
+    max-width: 795px;
+}
+.caption {
+    font-size: 1.1em;
+    position: absolute;
+    width: 100%;
+    background-color: rgb(255, 245, 151);
+    border-bottom: 1px solid darkgray;
+    top: 0;
+    padding: 7px 12px;
+    box-sizing: border-box;
+}
+.bookmarklet-area {
+    width: 500px;
+    padding: 200px 0;
+    text-align: center;
+}

@@ -1,6 +1,43 @@
+<% if (!user) { %>
+<div class="panel">
+    <img src="walkthrough/1.png" />
+    <div class="caption">Imagine reading the Wikipedia article about Star Trek: The Next Generation and and trying to find all the Starfleet engineers it mentions.</div></div>
+<div class="panel">
+    <img src="walkthrough/2.png" />
+    <div class="caption">With the Context Script bookmarklet this can be easily done:</div></div>
+<div class="panel">
+    <img src="walkthrough/3.png" />
+    <div class="caption">Unfortunately there was no script available. No matter. It is possible to create a new Context Script for the task...</div></div>
+<div class="panel">
+    <img src="walkthrough/4.png" />
+    <div class="caption">It is easy to build off scripts others have written.</div></div>
+<div class="panel"><img src="walkthrough/5.png" /></div>
+<div class="panel">
+    <img src="walkthrough/6.png" />
+    <div class="caption">Using the DBpedia Spotlight API we can search the page text for all the Starfleet engineers it mentions.</div></div>
+<div class="panel">
+    <img src="walkthrough/7.png" />
+    <div class="caption">Once the script is saved it the creator can find Starfleet engineers mentioned on any website they visit. And if the script is published so can everyone else.</div></div>
+<div class="panel">
+    <div class="bookmarklet-area"></div>
+    <div class="caption">
+        You can use this bookmarklet to try Content Script.
+        <strong>However, it will not allow you to save scripts.</strong>
+        To save scripts you must sign-in. Then you will be given a link to
+        a bookmarklet tied to your account.
+    </div>
+</div>
+<% } else { %>
+<div class="panel">
+    <div class="bookmarklet-area"></div>
+    <div class="caption">
+        Here is a Context Script bookmarklet linked to your account:
+    </div>
+</div>
+<% } %>
+
 <script>
 $(function(){
-    //This executes the code as well
     $.when(
         $.get("/injectContextScript.js"),
         $.get("/ctxscript-core.css")
@@ -18,9 +55,9 @@ $(function(){
             injectScript +
             "injectContextScript(" + JSON.stringify(config) +");"
         );
-        $(".main").append($('<a>').prop({
+        $(".bookmarklet-area").append($('<a>').prop({
             href: "javascript:" + encodeURI(script)
-        }).text("Context Script"));
+        }).text(config.user ? "Context Script" : "Context Script Demo"));
     });
 });
 </script>

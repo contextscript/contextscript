@@ -1,3 +1,4 @@
+---
 q:
   - "Edit script with id {{id}}"
   - "Create a script"

@@ -1,3 +1,4 @@
+---
 q: get page text
 ---
 ```javascript

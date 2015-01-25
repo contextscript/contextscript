@@ -1,3 +1,10 @@
+q:
+  - "Edit script with id {{id}}"
+  - "Create a script"
+  - "Create a script for this context"
+  - "Create a script from this one"
+---
+```javascript
 let ctrlTemplate = (templateContext)=>{
   //TODO: Add last saved date
   //TODO: Add indicator that shows if a script has been published or is queued.
@@ -179,3 +186,4 @@ Promise.all([
     throw err;
   }
 });
+```

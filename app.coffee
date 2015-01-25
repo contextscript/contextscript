@@ -333,24 +333,30 @@ server = app.listen port, ipaddr, ->
               email: {type : "string", index : "not_analyzed"}
               key: {type : "string", index : "not_analyzed"}
     .then ->
-      createScriptCode = fs.readFileSync("createScript.js", "utf8")
-      #This is just a data field, not the script property
-      #used by the update method.
-      return esclient.index
-        index: "contextscripts"
-        type: "contextscript"
-        id: "createScript"
-        refresh: true
-        body:
-          published: true
-          context:
-            q: [
-              "Edit script with id {{id}}"
-              "Create a script"
-              "Create a script for this context"
-              "Create a script from this one"
-            ]
-          script: createScriptCode
+      yamlhead = require('yamlhead')
+      path = require('path')
+      return Promise.all([
+        "contextScripts/createScript.md"
+        "contextScripts/getText.md"
+      ].map (curPath) ->
+        return new Promise (resolve, reject)->
+          yamlhead curPath, (err, yaml, content)->
+            if err
+              reject(err)
+            else
+              esclient.index
+                index: "contextscripts"
+                type: "contextscript"
+                id: path.basename(curPath, '.md')
+                refresh: true
+                body:
+                  published: true
+                  context: yaml
+                  # The first and last lines are markdown formatting.
+                  script: content.split('\n').slice(1,-1).join('\n')
+              .then(resolve)
+              .catch(reject)
+      )
     .then ->
       console.log "create script inserted"
     .catch (e)->

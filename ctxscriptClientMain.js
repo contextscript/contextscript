@@ -82,40 +82,38 @@ Promise.all([
   cxsAPI.args = $.extend({}, extraArgs, {});
   var chosenQItem;
   var q = result._source.context.q;
+  if(!$.isArray(q)) q = [q];
   var requestQ;
   if(cxsAPI.context) requestQ = cxsAPI.context.q;
-  if($.isArray(q)) {
-    if(!requestQ) {
-      //If there is not request q, use any user supplied args to compare
-      //choose the best matching title q.
-      var bestCount;
-      q.forEach(function(qItem){
-        var matchingKeys = ftm("", qItem).vars.reduce(function(sofar, cur){
-          return sofar + (cur.vName in cxsAPI.args ? 1 : 0);
-        }, 0);
-        if(!bestCount || matchingKeys > bestCount) {
-          chosenQItem = qItem;
-          bestCount = matchingKeys;
-        }
-      });
-    } else {
-      var bestMatch;
-      q.forEach(function(qItem){
-        var ftmResult = ftm(requestQ, qItem);
-        if(!bestMatch || ftmResult.adjustedLd < bestMatch.adjustedLd) {
-          chosenQItem = qItem;
-          bestMatch = ftmResult;
-        }
-      });
-      var newArgs = {};
-      bestMatch.vars.forEach(function(v){
-        newArgs[v.vName] = v.value;
-      });
-      cxsAPI.args = $.extend(newArgs, cxsAPI.args);
-    }
+  if(requestQ) {
+    var bestMatch;
+    q.forEach(function(qItem){
+      var ftmResult = ftm(requestQ, qItem);
+      if(!bestMatch || ftmResult.adjustedLd < bestMatch.adjustedLd) {
+        chosenQItem = qItem;
+        bestMatch = ftmResult;
+      }
+    });
+    var newArgs = {};
+    bestMatch.vars.forEach(function(v){
+      newArgs[v.vName] = v.value;
+    });
+    cxsAPI.args = $.extend(newArgs, cxsAPI.args);
   } else {
-    chosenQItem = result._source.context.q;
+    // If there is not a request q, use any user supplied args to
+    // choose the best matching qItem.
+    var bestCount;
+    q.forEach(function(qItem){
+      var matchingKeys = ftm("", qItem).vars.reduce(function(sofar, cur){
+        return sofar + (cur.vName in cxsAPI.args ? 1 : 0);
+      }, 0);
+      if(!bestCount || matchingKeys > bestCount) {
+        chosenQItem = qItem;
+        bestCount = matchingKeys;
+      }
+    });
   }
+
   cxsAPI.qItem = chosenQItem;
   var quotedArgContext = {};
   Object.keys(cxsAPI.args).forEach(function(argName){

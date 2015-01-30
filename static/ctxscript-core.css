@@ -20,7 +20,9 @@
   font-family: sans-serif;
   float: right;
   clear: both;
+  /* TODO: Simplify the width properties */
   min-width: 410px;
+  max-width: 425px;
   box-shadow: inset 0px 1px 2px white;
 }
 #ctxscript-q {

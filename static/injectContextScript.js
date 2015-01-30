@@ -24,7 +24,10 @@ options.container.innerHTML = '<div id="ctxscript-out"></div>' +
   '<input id="ctxscript-q"></input>' +
   '<button class="ctxscript-invoke" disabled=disabled>&gt;</button>' +
   '<button class="ctxscript-settings-btn" disabled=disabled>≡</button>' +
-  '<div class="ctxscript-settings" style="display:none;"><p class="ctxscript-close">Close</p></div>' +
+  '<div class="ctxscript-settings" style="display:none;">' +
+    '<p class="ctxscript-about">About</p>' +
+    '<p class="ctxscript-close">Close</p>' +
+  '</div>' +
   '</div>';
 var body = document.getElementsByTagName('body')[0];
 body.appendChild(options.container);
@@ -63,6 +66,7 @@ Promise.all([
 .then(lst("https://github.jspm.io/ModuleLoader/es6-module-loader@0.10.0/dist/es6-module-loader.js"))
 .then(lst("https://jspm.io/system@0.9.js"))
 .then(function(){
+  config.version = "0.0.0";
   window.initializeCtxScript(config, options);
 });
 };

@@ -275,6 +275,20 @@ app.get '/contextscripts/:id', (req, res, next) ->
       user: req.user
     }
   }
+  
+app.post "/v0/publish/:id", ensureAuthenticated, (req, res, next) ->
+  if not req.user.admin
+    return res.status(401).send({ error: 'Must be admin' })
+  esclient.update(
+    index: "contextscripts"
+    type: "contextscript"
+    id: req.params.id
+    body:
+      doc:
+        published: true
+  ).then((result)->
+    res.json(result)
+  ).catch(next)
 
 app.get '/myscripts', ensureAuthenticated, (req, res, next) ->
   esclient.search(

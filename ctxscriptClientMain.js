@@ -1,5 +1,6 @@
 window.initializeCtxScript = function(config, options){
 console.log("Initializing context script...");
+var VERSION = "0.0.0";
 var context = {
   location: {
     href: window.location.href,
@@ -229,6 +230,16 @@ $mainContainer.on('click', '.ctxscript-settings-btn', function ( e ) {
 });
 $mainContainer.on('click', '.ctxscript-close', function ( e ) {
   $mainContainer.hide();
+});
+$mainContainer.on('click', '.ctxscript-about', function ( e ) {
+  //The injection script could go out of sync with this one,
+  //so it is versioned separately.
+  //TODO: Make ctxscript alerts that allow copy/paste
+  alert(
+    "Version: " + VERSION + '-' + config.version +
+    "\nUser Id: " + (config.user && config.user.id) +
+    "\nServer URL: " + config.url
+  );
 });
 //TODO: Go though command history with up/down arrows
 $mainContainer.on('keypress', '#ctxscript-q', function(e) {

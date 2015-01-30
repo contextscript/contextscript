@@ -1,4 +1,5 @@
 <div id="container"></div>
+<% if(user && user.admin){ %><button id="approve">Approve for publication</button><% } %>
 <link rel="stylesheet" type="text/css" href="/ctxscript-core.css" />
 <script src="/injectContextScript.js"></script>
 <style>
@@ -13,5 +14,12 @@ injectContextScript(<%- JSON.stringify(config) %>, {
     id: "<%- id %>"
   },
   container: document.getElementById("container")
+});
+$("#approve").click(function(){
+  $.post("/v0/publish/<%- id %>")
+    .fail(function(e){
+      console.log(e);
+      alert(JSON.stringify(e));
+    });
 });
 </script>

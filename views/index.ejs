@@ -39,6 +39,7 @@
     Our script will send the page text to the DBpedia Spotlight API. Spotlight
     annotates the concepts and entities in the text that are related to the
     given category. I will skip over the data munging that happens afterwards.
+    (<a href="/contextscripts/starfleet">IYI</a>).
     </div>
     <img src="walkthrough/6.png" />
 </div>
@@ -89,7 +90,7 @@ $(function(){
             injectScript +
             "injectContextScript(" + JSON.stringify(config) +");"
         );
-        $(".bookmarklet-area").append($('<a>').prop({
+        $(".bookmarklet-area").append($('<a class="bookmarklet">').prop({
             href: "javascript:" + encodeURI(script)
         }).text(config.user ? "Context Script" : "Context Script Demo"));
     });

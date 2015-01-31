@@ -39,9 +39,6 @@
   color: green;
   line-height: 2em;
 }
-.ctxscript-bar:hover {
-  background-color: white;
-}
 .ctxscript-btn-group button {
   margin-left: 6px;
   display: inline;
@@ -60,4 +57,14 @@
 }
 .ctxscript-result:empty {
   display: none;
+}
+.ctxscript-d-arrow {
+  display: inline-block;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #333;
+  margin: 2px 7px;
+}
+.ctxscript-open-menu:hover .ctxscript-d-arrow {
+  border-top: 6px solid #FFF;
 }

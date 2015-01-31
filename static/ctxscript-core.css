@@ -14,15 +14,16 @@
 .ctxscript-box {
   display: block;
   background-color: #EEE;
-  border: 1px solid #BBB;
+  border: 1px solid #999;
   padding: 2px;
   margin: 5px;
   font-family: sans-serif;
   float: right;
   clear: both;
-  /* TODO: Simplify the width properties */
+  /*
   min-width: 410px;
-  max-width: 425px;
+  max-width: 425px;*/
+  width: 410px;
   box-shadow: inset 0px 1px 2px white;
 }
 #ctxscript-q {

@@ -16,7 +16,7 @@
 	<div class="header">
 		<h2><a href="/">Context Script</a></h2>
 	</div>
-	<div class="login">
+	<div class="menu-bar">
 		<% if (!user) { %>
 			<script>
 				$(function() {
@@ -38,8 +38,8 @@
 			</form>
 			<a class="btn" id="browserid">Sign In</a>
 		<% } else { %>
-			<a class="btn" href="/myscripts">My Scripts</a> |
-			<a class="btn" href="/logout">Sign Out</a>
+			<a class="btn" href="/myscripts">My Scripts</a><!--
+			--><a class="btn" href="/logout">Sign Out</a>
 		<% } %>
 	</div>
 	<div class="main">

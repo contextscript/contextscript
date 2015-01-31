@@ -8,10 +8,12 @@ body {
 }
 .header h1, .header h2 {
     font-family: sans-serif;
-    margin: 0px 10px;
-    line-height: 38px;
+    margin: 0px 12px;
+    line-height: 40px;
     color: white;
     text-shadow: 1px 1px #484, 1px -1px #484, -1px -1px #484, -1px 1px #484, 0 0 1px #484;
+    font-size: 22px;
+    vertical-align: bottom;
 }
 .header a {
     color: white;
@@ -20,17 +22,26 @@ body {
 .main {
     margin: 10px;
 }
-.login {
+.menu-bar {
     border-bottom: 1px solid #484;
     line-height: 1.3em;
 }
-.login .btn {
-    padding: 0px 10px;
+.menu-bar .btn {
+    padding: 0px 12px;
     color: green;
     text-decoration: none;
 }
-.login .btn:hover {
+.menu-bar .btn:hover {
     text-decoration: underline;
+}
+.menu-bar .btn {
+    border-left: 1px solid gray;
+}
+.menu-bar .btn:first-child {
+    border-left: none;
+}
+.menu-bar .btn:last-child {
+    border-right: 1px solid gray;
 }
 table {
     border: 1px solid gray;
@@ -84,4 +95,13 @@ table td, table th {
 }
 .footer-links a {
     margin: 10px;
+}
+.bookmarklet {
+    border: 1px solid gray;
+    text-decoration: none;
+    background-color: #EEE;
+    color: black;
+    padding: 2px 6px;
+    border-radius: 2px;
+    box-shadow: 0 1px 1px rgba(0,0,0,.2);
 }

@@ -308,13 +308,14 @@ app.get '/myscripts', ensureAuthenticated, (req, res, next) ->
 
 mainJs = fs.readFileSync("ctxscriptClientMain.js", "utf8")
 app.get "/main.js", allowXorigin, (req, res, next) ->
-  mainJs = fs.readFileSync("ctxscriptClientMain.js", "utf8")  if config.debug
+  mainJs = fs.readFileSync("ctxscriptClientMain.js", "utf8") if config.debug
   res.writeHead 200,
     "Content-Type": "text/javascript"
   res.end mainJs
 
 ctxscriptCss = fs.readFileSync("ctxscript.css", "utf8")
 app.get "/ctxscript.css", allowXorigin, (req, res, next) ->
+  ctxscriptCss = fs.readFileSync("ctxscript.css", "utf8") if config.debug
   res.writeHead 200,
     "Content-Type": "text/css"
   res.end ctxscriptCss

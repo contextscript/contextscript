@@ -121,7 +121,11 @@ Promise.all([
     quotedArgContext[argName] = "{{" + cxsAPI.args[argName] + "}}";
   });
   var title = handlebars.compile(chosenQItem)(quotedArgContext);
-  cxsAPI.$el.append($('<h1>').text(title));
+  cxsAPI.$el.append(
+    $('<h1 class="ctxscript-open-menu">')
+      .text(title)
+      .append('<span class="ctxscript-d-arrow">')
+  );
   var $controls = $('<div class="ctxscript-controls">');
   $controls.append(
     //TODO: Hook this button up.
@@ -132,8 +136,8 @@ Promise.all([
   );
   $controls.hide();
   cxsAPI.$el.append($controls);
-  //TODO: Create a button for toggling the controls.
-  cxsAPI.$el.click(function(){
+  
+  cxsAPI.$el.find('.ctxscript-open-menu').click(function(){
     $controls.toggle();
   });
   cxsAPI.$el = createBox();

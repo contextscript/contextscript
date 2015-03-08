@@ -83,7 +83,7 @@ $(function(){
         var cssLoadCode = "var ss = document.createElement('link');";
         cssLoadCode += "ss.rel = 'stylesheet';";
         cssLoadCode += "ss.href = 'data:text/css," + escape(coreCSS) + "';";
-        cssLoadCode += "document.documentElement.childNodes[0].appendChild(ss);";
+        cssLoadCode += "document.body.appendChild(ss);";
         cssLoadCode += "ss.addEventListener('load', function(){ document.dispatchEvent(new Event('showCtxscript')) }, false);\n"
         script = (
             cssLoadCode +

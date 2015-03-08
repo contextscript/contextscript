@@ -69,6 +69,7 @@ $mainContainer.on('click', '.ctxscript-search-btn', function ( e ) {
 System.import("handlebars")
 System.import("github:nathanathan/fuzzyTemplateMatcher@gh-pages/fuzzyTemplateMatcher");
 var evalContextScript = function(result, cxsAPI, extraArgs){
+//TODO: Use polyfill.
 Promise.all([
   System.import("handlebars"),
   System.import("github:nathanathan/fuzzyTemplateMatcher@gh-pages/fuzzyTemplateMatcher")

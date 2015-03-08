@@ -320,57 +320,60 @@ app.get "/ctxscript.css", allowXorigin, (req, res, next) ->
     "Content-Type": "text/css"
   res.end ctxscriptCss
 
-ipaddr = process.env.IP
-port = process.env.PORT
-server = app.listen port, ipaddr, ->
-  (new Promise (r)->r())
-    .then ->
-      return esclient.indices.putMapping
-        type: "contextscript"
-        body:
-          contextscript:
-            properties:
-              savedBy: {type : "string", index : "not_analyzed"}
-              "context.location.host" : {type : "string", index : "not_analyzed"}
-              "context.location.href" : {type : "string", index : "not_analyzed"}
-    .then ->
-      return esclient.indices.putMapping
-        type: "user"
-        body:
-          user:
-            properties:
-              email: {type : "string", index : "not_analyzed"}
-              key: {type : "string", index : "not_analyzed"}
-    .then ->
-      yamlhead = require('yamlhead')
-      path = require('path')
-      return Promise.all([
-        "contextScripts/createScript.md"
-        "contextScripts/getText.md"
-        "contextScripts/starfleet.md"
-      ].map (curPath) ->
-        return new Promise (resolve, reject)->
-          yamlhead curPath, (err, yaml, content)->
-            if err
-              reject(err)
-            else
-              esclient.index
-                index: "contextscripts"
-                type: "contextscript"
-                id: path.basename(curPath, '.md')
-                refresh: true
-                body:
-                  published: true
-                  context: yaml
-                  # The first and last lines are markdown formatting.
-                  script: content.split('\n').slice(1,-1).join('\n')
-              .then(resolve)
-              .catch(reject)
-      )
-    .then ->
-      console.log "base scripts indexed"
-    .catch (e)->
-      console.log("ERROR:", e)
-      server.close()
-
-  console.log "%s: Node server started on %s:%d ...", Date(Date.now()), ipaddr, port
+esclient.ping(
+  requestTimeout: 1000
+  hello: "elasticsearch!"
+)
+  .then ->
+    return esclient.indices.putMapping
+      type: "contextscript"
+      body:
+        contextscript:
+          properties:
+            savedBy: {type : "string", index : "not_analyzed"}
+            "context.location.host" : {type : "string", index : "not_analyzed"}
+            "context.location.href" : {type : "string", index : "not_analyzed"}
+  .then ->
+    return esclient.indices.putMapping
+      type: "user"
+      body:
+        user:
+          properties:
+            email: {type : "string", index : "not_analyzed"}
+            key: {type : "string", index : "not_analyzed"}
+  .then ->
+    yamlhead = require('yamlhead')
+    path = require('path')
+    return Promise.all([
+      "contextScripts/createScript.md"
+      "contextScripts/getText.md"
+      "contextScripts/starfleet.md"
+    ].map (curPath) ->
+      return new Promise (resolve, reject)->
+        yamlhead curPath, (err, yaml, content)->
+          if err
+            reject(err)
+          else
+            esclient.index
+              index: "contextscripts"
+              type: "contextscript"
+              id: path.basename(curPath, '.md')
+              refresh: true
+              body:
+                published: true
+                context: yaml
+                # The first and last lines are markdown formatting.
+                script: content.split('\n').slice(1,-1).join('\n')
+            .then(resolve)
+            .catch(reject)
+    )
+  .then ->
+    console.log "base scripts indexed"
+  .then ->
+    ipaddr = process.env.IP
+    port = process.env.PORT
+    app.listen port, ipaddr, ->
+      console.log "#{Date.now()}: Node server started on #{ipaddr}:#{port} ..."
+  .catch (e)->
+    esclient.close()
+    console.log("ERROR:", e)

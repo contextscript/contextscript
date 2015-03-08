@@ -36,7 +36,7 @@ passport.deserializeUser (email, done) ->
   )["catch"] done
 
 passport.use new PersonaStrategy(
-  audience: config.serverUrl
+  audience: config.serverHttpsUrl
 , (email, done) ->
   #TODO: TOS
   esclient.search(

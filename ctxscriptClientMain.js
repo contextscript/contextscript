@@ -23,7 +23,8 @@ var createContextScriptAPI = function(extras){
       var newOptions = $.extend({}, options, {
         user: config.user
       });
-      return $.post(config.url + path, newOptions);
+      // Forcing https because firefox is having trouble with x-origin http requests.
+      return $.post(config.url.replace(/(.{0,6}\/\/)/, "https://") + path, newOptions);
     },
     setResult: function(value){
       __resolveResult(value);
@@ -66,7 +67,7 @@ $mainContainer.on('click', '.ctxscript-search-btn', function ( e ) {
   doSearch($(e.target).text());
 });
 //Preload:
-System.import("handlebars")
+System.import("handlebars");
 System.import("github:nathanathan/fuzzyTemplateMatcher@gh-pages/fuzzyTemplateMatcher");
 var evalContextScript = function(result, cxsAPI, extraArgs){
 //TODO: Use polyfill.

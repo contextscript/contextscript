@@ -21,7 +21,7 @@ cxsAPI.$el.append("Querying dbpedia...");
 Promise.all([
 $.ajax({
   type: 'POST',
-  url: 'http://spotlight.dbpedia.org/rest/annotate',
+  url: '//spotlight.dbpedia.org/rest/annotate',
   data: {
     text: pageText,
     sparql: `SELECT DISTINCT ?person

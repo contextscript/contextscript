@@ -118,9 +118,45 @@ app.get "/", (req, res) ->
       url: config.serverUrl
       user: req.user
 
+app.get '/pages/:page', (req, res, next) ->
+  res.render 'pages/' + req.params.page,
+    user: req.user
+    config:
+      url: config.serverUrl
+      user: req.user
+
+app.get '/contextscripts/:id', (req, res, next) ->
+  res.render 'contextscripts',
+    id: req.params.id
+    user: req.user
+    config:
+      url: config.serverUrl
+      user: req.user
+
+app.get '/myscripts', ensureAuthenticated, (req, res, next) ->
+  esclient.search(
+    index: "contextscripts"
+    body:
+      query:
+        term:
+          "savedBy": req.user.id
+      _source:
+        exclude: ["script"]
+  ).then (result) ->
+    res.render 'myscripts',
+      user: req.user
+      result: result
+      config:
+        url: config.serverUrl
+        user: req.user
+  .catch(next)
+
 app.get "/login", (req, res) ->
   res.render "login",
     user: req.user
+    config:
+      url: config.serverUrl
+      user: req.user
 
 app.post "/auth/browserid", passport.authenticate("persona",
   failureRedirect: "/login"
@@ -210,6 +246,8 @@ app.post "/v0/scripts", allowXorigin, requireUserKey, (req, res, next) ->
     properties:
       q:
         type: [ "string", "array" ]
+        items:
+          type: "string"
       location:
         type: "object"
         properties:
@@ -265,16 +303,6 @@ app.get "/v0/contextscripts/:id", allowXorigin, (req, res, next) ->
   ).then((result)->
     res.json(result)
   ).catch(next)
-
-app.get '/contextscripts/:id', (req, res, next) ->
-  res.render 'contextscripts', {
-    id: req.params.id,
-    user: req.user,
-    config: {
-      url: config.serverUrl,
-      user: req.user
-    }
-  }
   
 app.post "/v0/publish/:id", ensureAuthenticated, (req, res, next) ->
   if not req.user.admin
@@ -289,22 +317,6 @@ app.post "/v0/publish/:id", ensureAuthenticated, (req, res, next) ->
   ).then((result)->
     res.json(result)
   ).catch(next)
-
-app.get '/myscripts', ensureAuthenticated, (req, res, next) ->
-  esclient.search(
-    index: "contextscripts"
-    body:
-      query:
-        term:
-          "savedBy": req.user.id
-      _source:
-        exclude: ["script"]
-  ).then (result) ->
-    res.render 'myscripts', {
-      user: req.user,
-      result: result
-    }
-  .catch(next)
 
 mainJs = fs.readFileSync("ctxscriptClientMain.js", "utf8")
 app.get "/main.js", allowXorigin, (req, res, next) ->

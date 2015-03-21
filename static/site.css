@@ -1,6 +1,6 @@
 body {
     margin: 0;
-    font: 14px arial, sans-serif;
+    font: 16px arial, sans-serif;
 }
 .header {
     background-color: #ADA;
@@ -8,12 +8,13 @@ body {
 }
 .header h1, .header h2 {
     font-family: sans-serif;
-    margin: 0px 12px;
     line-height: 40px;
     color: white;
     text-shadow: 1px 1px #484, 1px -1px #484, -1px -1px #484, -1px 1px #484, 0 0 1px #484;
-    font-size: 22px;
+    font-size: 24px;
     vertical-align: bottom;
+    margin: auto;
+    padding-left: 10px;
 }
 .header a {
     color: white;
@@ -25,6 +26,7 @@ body {
 .menu-bar {
     border-bottom: 1px solid #484;
     line-height: 1.3em;
+    color: darkgreen;
 }
 .menu-bar .btn {
     padding: 0px 12px;
@@ -33,14 +35,12 @@ body {
 }
 .menu-bar .btn:hover {
     text-decoration: underline;
+    cursor: pointer;
 }
 .menu-bar .btn {
     border-left: 1px solid gray;
 }
-.menu-bar .btn:first-child {
-    border-left: none;
-}
-.menu-bar .btn:last-child {
+.menu-bar-container .btn:last-child {
     border-right: 1px solid gray;
 }
 table {
@@ -56,10 +56,8 @@ table td, table th {
     position: relative;
     max-width: 795px;
     border: 1px solid #555;
-    margin-bottom: 5px;
     margin: auto;
-    margin-bottom: 10px;
-    color: #222;
+    margin-bottom: 20px;
 }
 .panel img {
     width: 100%;
@@ -74,13 +72,13 @@ table td, table th {
     border-bottom: 1px solid #555;
     padding: 7px 12px;
     box-sizing: border-box;
+    color: #222;
 }
 .bookmarklet-area {
     padding: 200px 0;
     text-align: center;
 }
 .main-panel {
-    color: darkgreen;
     border: 0;
     text-align: center;
     margin: 40px auto;
@@ -104,4 +102,30 @@ table td, table th {
     padding: 2px 6px;
     border-radius: 2px;
     box-shadow: 0 1px 1px rgba(0,0,0,.2);
+}
+.two-column .column {
+    max-width: 370px;
+    display: inline-block;
+    vertical-align: middle;
+}
+.small-caption {
+    padding: 0 12px;
+    text-align: left;
+    margin-right: 20px;
+}
+.subcaptions .caption {
+    border: 1px solid #555;
+    position: absolute;
+    width: 300px;
+    left: 20px;
+}
+.column img {
+    margin-top: 0;
+}
+.section-title {
+    margin: 35px;
+    text-align: center;
+}
+h2.section-title {
+    margin-top: 50px;
 }

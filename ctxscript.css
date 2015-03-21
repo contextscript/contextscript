@@ -1,34 +1,36 @@
-.ctxscript-settings, .ctxscript-controls {
+.ctxscript-container .ctxscript-settings, .ctxscript-controls {
   background-color: white;
   margin: 2px -2px -2px -2px;
   border-top: 1px solid lightgray;
 }
-.ctxscript-settings > p, .ctxscript-controls > a {
+.ctxscript-container .ctxscript-settings > p,
+.ctxscript-container .ctxscript-controls > a {
   margin: 0;
   padding: 2px 10px;
   display: block;
 }
-.ctxscript-settings > p:hover, .ctxscript-controls > a:hover {
+.ctxscript-container .ctxscript-settings > p:hover,
+.ctxscript-container .ctxscript-controls > a:hover {
   background-color: lightblue;
 }
-.ctxscript-box h4 {
+.ctxscript-container .ctxscript-box h4 {
   margin-top: 8px;
   margin-bottom: 0px;
 }
-.ctxscript-prev {
+.ctxscript-container .ctxscript-prev {
   margin-bottom: -6px;
 }
-.ctxscript-arrow {
+.ctxscript-container .ctxscript-arrow {
   font-weight: bold;
   margin: 5px;
 }
-.ctxscript-bar {
+.ctxscript-container .ctxscript-bar {
   background-color: #ADA;
   position: relative;
   margin-bottom: -6px;
   box-shadow: none;
 }
-.ctxscript-bar h1 {
+.ctxscript-container .ctxscript-bar h1 {
   text-align: center;
   border: none;
   padding: 1px;
@@ -39,15 +41,15 @@
   color: green;
   line-height: 2em;
 }
-.ctxscript-btn-group button {
+.ctxscript-container .ctxscript-btn-group button {
   margin-left: 6px;
   display: inline;
 }
-.ctxscript-btn-group button:first-child {
+.ctxscript-container .ctxscript-btn-group button:first-child {
   margin-left: 0;
   display: inline;
 }
-.ctxscript-result textarea {
+.ctxscript-container .ctxscript-result textarea {
   margin: auto;
   width: 403px;
   max-width: 403px;
@@ -55,16 +57,16 @@
   display: block;
   font-family: "Courier New", monospace;
 }
-.ctxscript-result:empty {
+.ctxscript-container .ctxscript-result:empty {
   display: none;
 }
-.ctxscript-d-arrow {
+.ctxscript-container .ctxscript-d-arrow {
   display: inline-block;
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
   border-top: 6px solid #333;
   margin: 2px 7px;
 }
-.ctxscript-open-menu:hover .ctxscript-d-arrow {
+.ctxscript-container .ctxscript-open-menu:hover .ctxscript-d-arrow {
   border-top: 6px solid #FFF;
 }

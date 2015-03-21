@@ -11,7 +11,7 @@
         "express-partials": ">= 0.0.0",
         "handlebars": ">= 0.0.0",
         "winston": ">= 0.2.0",
-        "passport": ">= 0.1.17",
+        "passport": ">= 0.2.1",
         "passport-persona": ">= 0.0.0",
         "ejs": ">= 0.0.0",
         "body-parser": ">= 0.0.0",

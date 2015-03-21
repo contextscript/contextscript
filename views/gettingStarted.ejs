@@ -1,0 +1,64 @@
+<h2 class="section-title">Getting Started</h2>
+<div class="panel">
+    <div class="caption">
+    You can use the bookmarklet in this panel to try Content Script.
+    Drag it onto your bookmark bar to use it on other sites.
+    If you're using Chrome pressing <b>Ctrl+Shift+B</b> will show your bookmark bar.
+    <% if (!user) { %>
+        <strong>However, this bookmarklet will only allow you to use public scripts.</strong>
+        To save your own scripts you must <a href="/login">sign in</a>.
+        Then you will be given a bookmarklet that is tied to your account.
+    <% } %>
+    </div>
+    <div class="bookmarklet-area"></div>
+</div>
+<div class="panel">
+    <div class="caption">
+    Let's try using the bookmarklet to extract data from a Wikipedia article.
+    </div>
+    <img src="gettingStarted/1.png" />
+</div>
+<div class="panel">
+    <div class="caption">
+    You can use a command like "extract tables" to download the data tables on the page.
+    </div>
+    <img src="gettingStarted/2.png" />
+</div>
+
+<h2 class="section-title">Creating Context Scripts</h2>
+<div class="panel">
+    <div class="caption">
+    If you want to use a command that has not been implemented
+    create a Context Script for it on-the-fly
+    by entering a command like "create a script."
+    </div>
+    <img src="gettingStarted/3.png" />
+</div>
+<div class="panel">
+    <div class="caption">
+    The "create a script" command should render an editor like this one.
+    </div>
+    <div class="subcaptions">
+        <div class="caption" style="top:160px;">
+        To create a Context Script you will need create a context description
+        which specifies the conditions that trigger the script.
+        The "q" property is the trigger phrase.
+        </div>
+        <div class="caption" style="top:300px;">
+        The script can be written in ES6 JavaScript.
+        SystemJS can be used to load libraries from <a href="http://jspm.io/">jspm<a>.
+        The csxAPI object provides mechanisms for interacting with the bookmarklet UI.
+        </div>
+        <div class="caption" style="top:460px;">
+        Saving a Context Script will only make it available to you.
+        Publishing it will make it available to everyone,
+        but the script must undergo a review process to ensure it is safe.
+        The review system is in development, so publishing a script
+        requires submitting a pull request to the Context Script github repository
+        for the time being.
+        </div>
+    </div>
+    <img src="gettingStarted/4.png" />
+</div>
+
+<h2 class="section-title">Learn more: <a href="/pages/starfleet">Finding starfleet engineers</a></h2>

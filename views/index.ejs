@@ -1,98 +1,22 @@
-<% if (!user) { %>
 <div class="panel main-panel">
-    <h2>A Context Script is a JavaScript program with natural language commands that trigger it.</h2>
-    <p>This website provides a database of shared Context Scripts and
-    a bookmarklet for invoking them on the websites you visit.</p>
-</div>
-<div class="panel">
-    <div class="caption">
-    Imagine trying to find all the Starfleet engineers mentioned in the
-    Wikipedia article about <i>Star Trek: The Next Generation</i>.
-    </div>
-    <img src="walkthrough/1.png" style="opacity:0.7;" />
-</div>
-<div class="panel">
-    <div class="caption">
-    The Context Script bookmarklet can run a program that will find them for you.<br />
-    <small>(The Context Script bookmarklet doesn't just find Starfleet engineers,
-    it can run any script that helps people interact with the web.)</small>
-    </div>
-    <img src="walkthrough/2.png" />
-</div>
-<div class="panel">
-    <div class="caption">
-    I did not create a Context Script for finding Starfleet engineers prior to creating this demo
-    so that we can walk through the process of making it.
-    </div>
-    <img src="walkthrough/3.png" />
-</div>
-<div class="panel">
-    <div class="caption">
-    Building off of existing scripts makes creating new scripts easier.
-    We will use the "get page text" script to perform the first step in our task.
-    </div>
-    <img src="walkthrough/4.png" />
-</div>
-<div class="panel"><img src="walkthrough/5.png" /></div>
-<div class="panel">
-    <div class="caption">
-    Our script will send the page text to the DBpedia Spotlight API. Spotlight
-    annotates the concepts and entities in the text that are related to the
-    given category. I will skip over the data munging that happens afterwards.
-    (<a href="/contextscripts/starfleet">IYI</a>).
-    </div>
-    <img src="walkthrough/6.png" />
-</div>
-<div class="panel">
-    <div class="caption">
-    Once the script has been saved the creator can use it to find 
-    Starfleet engineers mentioned on any website they visit.
-    And, when the script is published, so can you.
-    </div>
-    <img src="walkthrough/7.png" />
-</div>
-<div class="panel">
-    <div class="caption">
-    You can use the bookmarklet in this panel to try Content Script.
-    (Drag it onto your bookmark bar to use it.)
-    <strong>However, it will not allow you to save scripts.</strong>
-    To save scripts you must sign in. Then you will be given a link to
-    a bookmarklet that is tied to your account.
-    </div>
-    <div class="bookmarklet-area"></div>
-</div>
-<% } else { %>
-<div class="panel">
-    <div class="caption">
-    Here is a Context Script bookmarklet that is linked to your account.
-    (Drag it onto your bookmark bar to use it.)
-    </div>
-    <div class="bookmarklet-area"></div>
-</div>
-<% } %>
+    <h1 class="section-title">Share natural language commands for the web</h1>
+    <div class="two-column">
 
-<script>
-$(function(){
-    $.when(
-        $.get("/injectContextScript.js"),
-        $.get("/ctxscript-core.css")
-    ).then(function(injectScript, coreCSS){
-        injectScript = injectScript[0];
-        coreCSS = coreCSS[0];
-        var config = <%- JSON.stringify(config) %>;
-        var cssLoadCode = "var ss = document.createElement('link');";
-        cssLoadCode += "ss.rel = 'stylesheet';";
-        cssLoadCode += "ss.href = 'data:text/css," + escape(coreCSS) + "';";
-        cssLoadCode += "document.body.appendChild(ss);";
-        cssLoadCode += "ss.addEventListener('load', function(){ document.dispatchEvent(new Event('showCtxscript')) }, false);\n"
-        script = (
-            cssLoadCode +
-            injectScript +
-            "injectContextScript(" + JSON.stringify(config) +");"
-        );
-        $(".bookmarklet-area").append($('<a class="bookmarklet">').prop({
-            href: "javascript:" + encodeURI(script)
-        }).text(config.user ? "Context Script" : "Context Script Demo"));
-    });
-});
-</script>
+        <div class="column small-caption">
+        <p>A Context Script is a JavaScript program with natural language commands that trigger it.</p>
+        <p>Use the bookmarklet interface (pictured) to invoke Context Scripts on the websites you visit.
+        Sign in to add it to your browser.</p>
+        <p>This website provides a database where you can save and publish your Context Scripts.
+        When you use the bookmarklet to invoke a command like
+        "save the data on this webpage as a csv" the
+        database is searched for scripts with similar trigger phrases,
+        then the script that best matches your context (e.g. the webpage you are on)
+        is evaluated.</p>
+        </div>
+        <div class="column">
+            <img src="demo.png" />
+        </div>
+    </div>
+</div>
+
+<% include gettingStarted %>

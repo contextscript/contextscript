@@ -4,6 +4,7 @@ q:
   - "Create a script"
   - "Create a script for this context"
   - "Create a script from this one"
+  - "Edit this script"
 ---
 ```javascript
 let ctrlTemplate = (templateContext)=>{
@@ -28,9 +29,10 @@ let ctrlTemplate = (templateContext)=>{
       </a>
     </div>
     ${ !templateContext.user ?
-      `<small>You must be signed into a contextscript.com account to save this script.</small>`
+      `<small>You must be signed into a contextscript.com account to save this script.</small><br />`
       : ""
     }
+    <small>Script Id: <b>${ templateContext.scriptId }</b></small>
   `;
 }
 let template = (templateContext)=>{
@@ -63,6 +65,10 @@ let template = (templateContext)=>{
       <div id="controls">${ ctrlTemplate(templateContext) }</div>
     </div>`;
 };
+// If require is defined on the page it can break ace
+// so it is temporairily kept in another variable.
+window.pageRequire = window.require;
+window.require = undefined;
 cxsAPI.$el.text('Loading editor...');
 Promise.all([
   System.import('ace/ace'),
@@ -73,9 +79,7 @@ Promise.all([
       .success(resolve).fail((resp)=>reject({reason: "missing", resp: resp}))
   })
 ]).then(function([ace, YAML, myContextScript]){
-  cxsAPI.$el.html(template({
-    user: cxsAPI.config.user
-  }));
+  window.require = window.pageRequire;
   //Set some defaults:
   var createdContext = $.extend({}, cxsAPI.context, {
     q:"Write a trigger phrase here..."
@@ -109,10 +113,24 @@ Promise.all([
       } else {
         alert("Which one?");
       }
+    },
+    "Edit this script" : ()=>{
+      let prevCtxScript = cxsAPI.getPrevEvaledCtxScript();
+      if(prevCtxScript) {
+        createdContext = $.extend({}, prevCtxScript._source.context, true);
+        createdScript = prevCtxScript._source.script;
+        scriptId = prevCtxScript._id;
+      } else {
+        alert("Which one?");
+      }
     }
   };
   if(cxsAPI.qItem in qItemMap) qItemMap[cxsAPI.qItem]();
   
+  cxsAPI.$el.html(template({
+    user: cxsAPI.config.user,
+    scriptId: scriptId
+  }));
   var contextEditor = ace.edit(cxsAPI.$el.find("#context")[0]);
   //TODO: Make highlighting work
   //contextEditor.getSession().setMode("ace/mode/yaml");
@@ -180,6 +198,7 @@ Promise.all([
     });
   });
 }).catch(function(err) {
+  window.require = window.pageRequire;
   if(err.reason == "missing") {
     cxsAPI.$el.text('Error: Could not find script with the given id.');
   } else {

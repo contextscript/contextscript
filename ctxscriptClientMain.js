@@ -45,7 +45,7 @@ var createContextScriptAPI = function(extras){
     },
     getPrevResultPromise: function(){
       var prevHistItem = this.getPrevHistItem();
-      if(prevHistItem) return prevHistItem.resultPromise();
+      if(prevHistItem) return prevHistItem.resultPromise;
       return null;
     },
     getPrevEvaledCtxScript: function(){

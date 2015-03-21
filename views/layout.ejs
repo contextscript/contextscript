@@ -10,6 +10,30 @@
 	<link href="/site.css" type="text/css" rel="stylesheet" />
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 	<script src="https://login.persona.org/include.js" type="text/javascript"></script>
+<script>
+$(function(){
+    $.when(
+        $.get("/injectContextScript.js"),
+        $.get("/ctxscript-core.css")
+    ).then(function(injectScript, coreCSS){
+        injectScript = injectScript[0];
+        coreCSS = coreCSS[0];
+        var config = <%- JSON.stringify(config) %>;
+        var cssLoadCode = "var ss = document.createElement('link');";
+        cssLoadCode += "ss.rel = 'stylesheet';";
+        cssLoadCode += "ss.href = 'data:text/css," + escape(coreCSS) + "';";
+        cssLoadCode += "document.body.appendChild(ss);";
+        script = (
+            cssLoadCode +
+            injectScript +
+            "injectContextScript(" + JSON.stringify(config) +");"
+        );
+        $(".bookmarklet-area").append($('<a class="bookmarklet">').prop({
+            href: "javascript:" + encodeURI(script)
+        }).text(config.user ? "Context Script" : "Context Script Demo"));
+    });
+});
+</script>
 </head>
 
 <body>
@@ -17,6 +41,7 @@
 		<h2><a href="/">Context Script</a></h2>
 	</div>
 	<div class="menu-bar">
+		<div class="menu-bar-container">
 		<% if (!user) { %>
 			<script>
 				$(function() {
@@ -33,14 +58,15 @@
 					});
 				});
 			</script>
-			<form action="/auth/browserid" method="post" style="display:none;">
+			<form action="/auth/browserid?redirect=/myscripts" method="post" style="display:none;">
 				<input type="text" name="assertion" />
 			</form>
 			<a class="btn" id="browserid">Sign In</a>
 		<% } else { %>
-			<a class="btn" href="/myscripts">My Scripts</a><!--
+			<a class="btn" href="/myscripts">My Account</a><!--
 			--><a class="btn" href="/logout">Sign Out</a>
 		<% } %>
+		</div>
 	</div>
 	<div class="main">
 		<%- body %>

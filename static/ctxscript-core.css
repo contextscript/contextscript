@@ -1,4 +1,4 @@
-.ctxscript-container {
+.ctxscript-copilot {
   position: fixed;
   top: 0;
   right: 0;
@@ -38,7 +38,6 @@
   display: block;
   margin-top: 10px;
   padding: 2px;
-  
   border: 1px solid #AAA;
   background-color: #FEFEFE;
   box-shadow: inset 0 -8px 18px #DFDFDF;

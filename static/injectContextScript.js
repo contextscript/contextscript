@@ -1,9 +1,10 @@
 var injectContextScript = function(config, options){
 //If ctxscript was previously closed, just reopen the old instance.
-var container = document.querySelector('.ctxscript-container');
+var container = document.querySelector('.ctxscript-copilot');
 if(container) {
   if(container.style.display === "none") {
     container.style.display = "";
+    options.container.querySelector('#ctxscript-q').focus();
   } else {
     container.style.display = "none";
   }
@@ -13,21 +14,22 @@ if(container) {
 if(!options) options = {};
 if(!options.container) {
   options.container = document.createElement('div');
-  options.container.className = "ctxscript-container";
+  options.container.className = "ctxscript-copilot";
 }
+options.container.classList.add("ctxscript-container");
 var link = document.createElement("link");
 link.rel="stylesheet";
 link.href = config.url + "/ctxscript.css";
 
 options.container.innerHTML = '<div id="ctxscript-out"></div>' +
   '<div class="ctxscript-box" style="margin-bottom: 200px;">' +
-  '<input id="ctxscript-q"></input>' +
-  '<button class="ctxscript-btn ctxscript-invoke" disabled=disabled>&gt;</button>' +
-  '<button class="ctxscript-btn ctxscript-settings-btn" disabled=disabled>≡</button>' +
-  '<div class="ctxscript-settings" style="display:none;">' +
-    '<p class="ctxscript-about">About</p>' +
-    '<p class="ctxscript-close">Close</p>' +
-  '</div>' +
+    '<input id="ctxscript-q"></input>' +
+    '<button class="ctxscript-btn ctxscript-invoke" disabled=disabled>&gt;</button>' +
+    '<button class="ctxscript-btn ctxscript-settings-btn" disabled=disabled>≡</button>' +
+    '<div class="ctxscript-settings" style="display:none;">' +
+      '<p class="ctxscript-about">About</p>' +
+      '<p class="ctxscript-close">Close</p>' +
+    '</div>' +
   '</div>';
 document.body.appendChild(options.container);
 //Wait for the the injected css to start styling.

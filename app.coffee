@@ -168,7 +168,8 @@ app.get "/logout", (req, res) ->
   res.redirect("/")
 
 app.post "/v0/search", allowXorigin, (req, res, next) ->
-  console.log(req.user);
+  if not req.body.context
+    return res.status(400).send({ error: "No context provided" })
   userOverrides = []
   if req.body.user
     orConditions = [{
@@ -179,22 +180,19 @@ app.post "/v0/search", allowXorigin, (req, res, next) ->
     userOverrides = []
   else
     orConditions = []
-  orConditions.push([
-    {
-      "and": [
-        {
-          term:
-            published: true
-        }
-        {
-          "not": 
-            ids:
-              values: userOverrides
-        }
-      ]
-    }
-  ])
-  console.log orConditions
+  orConditions.push(
+    "and": [
+      {
+        term:
+          published: true
+      }
+      {
+        "not": 
+          ids:
+            values: userOverrides
+      }
+    ]
+  )
   mustTerms = [{
     "or" : orConditions
   }]

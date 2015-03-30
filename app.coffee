@@ -358,6 +358,7 @@ esclient.ping(
       "contextScripts/createScript.md"
       "contextScripts/getText.md"
       "contextScripts/starfleet.md"
+      "contextScripts/extractTables.md"
     ].map (curPath) ->
       return new Promise (resolve, reject)->
         yamlhead curPath, (err, yaml, content)->

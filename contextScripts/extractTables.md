@@ -51,7 +51,7 @@ System.import("npm:json2csv")
             $rows[headerIdx].querySelectorAll("tr, th")
         )
         .map((header)=>{
-            return header.innerText;
+            return header.textContent;
         });
         
         var headerStats = headerArray.reduce((sofar, header)=>{
@@ -74,7 +74,7 @@ System.import("npm:json2csv")
             Array.from(
                 row.querySelectorAll("td, th")
             ).forEach((el, idx)=>{
-                rowObject[headerArray[idx]] = el.innerText;
+                rowObject[headerArray[idx]] = el.textContent;
             })
             return rowObject;
         });

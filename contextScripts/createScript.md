@@ -5,6 +5,7 @@ q:
   - "Create a script for this context"
   - "Create a script from this one"
   - "Edit this script"
+
 ---
 ```javascript
 let ctrlTemplate = (templateContext)=>{
@@ -48,6 +49,12 @@ let template = (templateContext)=>{
         border-left: 0;
         border-right: 0;
         box-shadow: inset 0px 0px 2px gray;
+      }
+      .resize-context, .resize-script {
+        font-size: 12px;
+        font-weight: normal;
+        color: blue;
+        float: right;
       }
     </style>
     <div class="ctxscript-editor">
@@ -133,11 +140,13 @@ Promise.all([
   }));
   var contextEditor = ace.edit(cxsAPI.$el.find("#context")[0]);
   //TODO: Make highlighting work
+  // Related: https://github.com/jspm/registry/issues/38
   //contextEditor.getSession().setMode("ace/mode/yaml");
   contextEditor.renderer.setShowGutter(false);
-  contextEditor.setOption("maxLines", 12);
+  contextEditor.setOption("maxLines", 60);
   contextEditor.setOption("minLines", 2);
   contextEditor.setOption("highlightActiveLine", false);
+  contextEditor.getSession().setTabSize(2);
   contextEditor.getSession().setValue(
     "# The location is optional. If you specify a url href, \n" +
     "# it must exactly match the users url for script to be triggered.\n" +
@@ -147,11 +156,11 @@ Promise.all([
   var scriptEditor = ace.edit(cxsAPI.$el.find("#script")[0]);
   //scriptEditor.getSession().setMode("ace/mode/javascript");
   scriptEditor.renderer.setShowGutter(false);
-  scriptEditor.setOption("maxLines", 12);
+  scriptEditor.setOption("maxLines", 60);
   scriptEditor.setOption("minLines", 3);
   scriptEditor.setOption("highlightActiveLine", false);
   scriptEditor.getSession().setValue(createdScript);
-
+  scriptEditor.getSession().setTabSize(2);
   cxsAPI.$el.find("#test").click(function ( e ) {
     var $testContainer = cxsAPI.$el.find('.test-container');
     $testContainer.empty().html('<div class="ctxscript-result"></div>');
@@ -167,9 +176,9 @@ Promise.all([
     }());
   });
   
-  cxsAPI.$el.find("#save").click(function ( e ) {
-    $(e.target).prop('disabled', true);
-    $(e.target).text("Saving...");
+  cxsAPI.$el.on("click", "#save", function ( e ) {
+    $(e.currentTarget).prop('disabled', true);
+    $(e.currentTarget).text("Saving...");
     cxsAPI.apiPost('/v0/scripts', {
       _id: scriptId,
       context: YAML.safeLoad(contextEditor.getSession().getValue()),
@@ -178,13 +187,13 @@ Promise.all([
       alert(JSON.stringify(err));
     }).always(function(resp){
       console.log(resp);
-      $(e.target).prop('disabled', false);
-      $(e.target).text("Save");
+      $(e.currentTarget).prop('disabled', false);
+      $(e.currentTarget).text("Save");
     });
   });
-  cxsAPI.$el.find("#publish").click(function ( e ) {
-    $(e.target).prop('disabled', true);
-    $(e.target).text("Publishing...");
+  cxsAPI.$el.on("click", "#publish", function ( e ) {
+    $(e.currentTarget).prop('disabled', true);
+    $(e.currentTarget).text("Publishing...");
     cxsAPI.apiPost('/v0/publish', {
       _id: scriptId,
       context: YAML.safeLoad(contextEditor.getSession().getValue()),
@@ -193,8 +202,8 @@ Promise.all([
       alert(JSON.stringify(err));
     }).always(function(resp){
       console.log(resp);
-      $(e.target).prop('disabled', false);
-      $(e.target).text("Publish");
+      $(e.currentTarget).prop('disabled', false);
+      $(e.currentTarget).text("Publish");
     });
   });
 }).catch(function(err) {

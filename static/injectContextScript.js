@@ -4,7 +4,7 @@ var container = document.querySelector('.ctxscript-copilot');
 if(container) {
   if(container.style.display === "none") {
     container.style.display = "";
-    options.container.querySelector('#ctxscript-q').focus();
+    container.querySelector('#ctxscript-q').focus();
   } else {
     container.style.display = "none";
   }

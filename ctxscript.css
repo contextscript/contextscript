@@ -41,6 +41,11 @@
   color: green;
   line-height: 2em;
 }
+.ctxscript-container .ctxscript-btn.ctxscript-item-btn {
+  display: inline-block;
+  width: 100%;
+  margin: 0;
+}
 .ctxscript-container .ctxscript-btn-group button {
   margin-left: 6px;
   display: inline;
@@ -69,4 +74,13 @@
 }
 .ctxscript-container .ctxscript-open-menu:hover .ctxscript-d-arrow {
   border-top: 6px solid #FFF;
+}
+/* reset styles from webpage */
+.ctxscript-container .ctxscript-btn {
+  min-width: 25px;
+  color: black;
+}
+.ctxscript-container .ctxscript-btn:hover {
+  background-color: inherit;
+  color: black;
 }

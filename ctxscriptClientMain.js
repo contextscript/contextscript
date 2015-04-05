@@ -192,20 +192,24 @@ var doSearch = function(q){
           evalContextScript(hitsAboveThreshold[0], cxsAPI);
           return;
       }
-      //TODO Creation dates and other meta-data
+      //TODO Add more meta-data
       cxsAPI.$el.append("<h4>Multiple results:</h4>");
       var $results = $("<ul>");
       resp.hits.forEach(function(result){
         var $row = $('<li>');
-        var $button = $('<button class="ctxscript-btn">')
-          .text(result._source.context.q);
-        $button.click(function(){
-          cxsAPI.$el.empty();
-          evalContextScript(result, cxsAPI);
-        });
+        var $button = $('<button class="ctxscript-btn ctxscript-item-btn">')
+          .text(result._source.context.q)
+          .click(function(){
+            cxsAPI.$el.empty();
+            evalContextScript(result, cxsAPI);
+          });
         $row.append(
           $button,
-          $('<a class="ctxscript-source">source</a>').prop({
+          $('<div>').text(
+            "Last Modified: " +
+            (new Date(result._source.lastModified)).toDateString()
+          ),
+          $('<a class="ctxscript-source">View Source</a>').prop({
             href: cxsAPI.config.url + '/contextscripts/' + result._id
           })
         );

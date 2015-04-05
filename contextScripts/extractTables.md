@@ -93,7 +93,7 @@ System.import("npm:json2csv")
                             err = "Too few headers, probably a formatting table.";
                         }
                     }
-                    return resolve([null, result, rowObjectArray, headerArray]);
+                    return resolve([err, result, rowObjectArray, headerArray]);
                 }
             )
         });

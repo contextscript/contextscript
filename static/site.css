@@ -129,3 +129,19 @@ table td, table th {
 h2.section-title {
     margin-top: 50px;
 }
+.section {
+    margin: auto;
+    text-align: center;
+}
+@media screen and (max-width:700px) {
+    .subcaptions {
+        z-index: 200;
+        position: relative;
+    }
+    .subcaptions .caption {
+        position: static; 
+        width: inherit;
+        border-width: 0;
+        border-bottom-width: 1px;
+    }
+}

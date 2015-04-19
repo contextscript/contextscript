@@ -331,11 +331,12 @@ app.get "/ctxscript.css", allowXorigin, (req, res, next) ->
   res.end ctxscriptCss
 
 esclient.ping(
-  requestTimeout: 1000
+  requestTimeout: 10000
   hello: "elasticsearch!"
 )
   .then ->
     return esclient.indices.putMapping
+      requestTimeout: 300000
       type: "contextscript"
       body:
         contextscript:

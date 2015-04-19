@@ -12,6 +12,7 @@ if(container) {
 }
 //Set defaults
 if(!options) options = {};
+if(options.init) options.init();
 if(!options.container) {
   options.container = document.createElement('div');
   options.container.className = "ctxscript-copilot";

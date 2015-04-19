@@ -19,14 +19,18 @@ $(function(){
         injectScript = injectScript[0];
         coreCSS = coreCSS[0];
         var config = <%- JSON.stringify(config) %>;
-        var cssLoadCode = "var ss = document.createElement('link');";
-        cssLoadCode += "ss.rel = 'stylesheet';";
-        cssLoadCode += "ss.href = 'data:text/css," + escape(coreCSS) + "';";
-        cssLoadCode += "document.body.appendChild(ss);";
+        var loadCssFunc = "function(){";
+        loadCssFunc += "var ss = document.createElement('link');";
+        loadCssFunc += "ss.rel = 'stylesheet';";
+        loadCssFunc += "ss.href = 'data:text/css," + escape(coreCSS) + "';";
+        loadCssFunc += "document.body.appendChild(ss);";
+        loadCssFunc += "}";
         script = (
-            cssLoadCode +
             injectScript +
-            "injectContextScript(" + JSON.stringify(config) +");"
+            "injectContextScript(" +
+	            JSON.stringify(config) + "," +
+	            "{ init : " + loadCssFunc + "}" +
+            ");"
         );
         $(".bookmarklet-area").append($('<a class="bookmarklet">').prop({
             href: "javascript:" + encodeURI(script)

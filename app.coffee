@@ -12,7 +12,7 @@ partials = require("express-partials")
 uuid = require("node-uuid")
 Promise = require('promise')
 validate = require('jsonschema').validate
-
+ 
 # Passport session setup.
 #   To support persistent login sessions, Passport needs to be able to
 #   serialize users into and deserialize users out of the session.  Typically,
@@ -93,6 +93,7 @@ requireUserKey = (req, res, next) ->
     id: req.body.user.id
   ).then((user)->
     if user._source.key == req.body.user.key
+      req.user = user
       next()
     else
       res.status(401).send({ error: 'Invalid key' })
@@ -104,7 +105,7 @@ ensureAuthenticated = (req, res, next) ->
   if req.isAuthenticated()
     next()
   else
-    res.redirect('/login')
+    res.redirect('/login?redirect=' + req.originalUrl)
 
 allowXorigin = (req, res, next) ->
   res.header "Access-Control-Allow-Origin", "*"
@@ -154,6 +155,7 @@ app.get '/myscripts', ensureAuthenticated, (req, res, next) ->
 app.get "/login", (req, res) ->
   res.render "login",
     user: req.user
+    redirect: req?.query?.redirect
     config:
       url: config.serverUrl
       user: req.user
@@ -309,12 +311,104 @@ app.post "/v0/publish/:id", ensureAuthenticated, (req, res, next) ->
     index: "contextscripts"
     type: "contextscript"
     id: req.params.id
+    refresh: true
     body:
       doc:
         published: true
   ).then((result)->
     res.json(result)
   ).catch(next)
+
+# A endpoints for editing google sheets.
+# TODO: Things like this should be independent services
+
+googleapis = require('googleapis')
+EditGoogleSheet = require('edit-google-spreadsheet')
+
+oauth2Client = new googleapis.auth.OAuth2(
+  config.googleapis.CLIENT_ID,
+  config.googleapis.CLIENT_SECRET,
+  config.serverHttpsUrl + '/oauth2callback'
+)
+
+app.get '/oauth2callback', ensureAuthenticated, (req, res)->
+  unless req?.query?.code then return res.status(401).send({ error: 'No code' })
+  oauth2Client.getToken req.query.code, (err, tokens)->
+    if err then return res.status(401).send({ error: err })
+    esclient.update
+      index: "users"
+      type: "user"
+      id: req.user.id
+      refresh: true
+      body:
+        doc:
+          googleCredentials: tokens
+    .then ->
+      res.render "googleAuth",
+        user: req.user
+        config:
+          url: config.serverUrl
+          user: req.user
+    .catch (err)-> res.status(401).send({ error: err })
+
+requireGoogleCredentials = (req, res, next) ->
+  requireUserKey req, res, ()->
+    expiryDate = req.user?._source?.googleCredentials?.expiry_date
+    unless expiryDate and expiryDate > Number(new Date())
+      oauth2URL = oauth2Client.generateAuthUrl({
+        access_type: 'offline',
+        scope: [
+          'https://www.googleapis.com/auth/drive'
+        ]
+      })
+      return res.json
+        oauth2URL: oauth2URL
+    req.credentials = req.user._source.googleCredentials
+    next()
+
+app.post "/v0/googleSheet/info/:id", allowXorigin, requireGoogleCredentials, (req, res, next) ->
+  EditGoogleSheet.load({
+    debug: true
+    spreadsheetId: req.params.id
+    # TODO: Add query param for this
+    worksheetId: 'od6'
+    accessToken:
+      type: req.credentials.token_type
+      token: req.credentials.access_token
+  }, (err, spreadsheet) ->
+    if err then return res.status(401).send({ error: err })
+    spreadsheet.receive (err, rows, info) ->
+      if err then return res.status(401).send({ error: err })
+      info.header = rows["1"]
+      # TODO: Don't download the full sheet
+      res.json
+        info: info
+  )
+
+app.post "/v0/googleSheet/addRows/:id", allowXorigin, requireGoogleCredentials, (req, res, next) ->
+  if req?.body?.rows?.length == 0
+    return res.status(401).send({ error: "No rows were posted" }) 
+  EditGoogleSheet.load({
+    debug: true
+    spreadsheetId: req.params.id
+    # TODO: Add query param for this
+    worksheetId: 'od6'
+    accessToken:
+      type: req.credentials.token_type
+      token: req.credentials.access_token
+  }, (err, spreadsheet) ->
+    if err then return res.status(401).send({ error: err })
+    spreadsheet.receive (err, rows, info) ->
+      if err then return res.status(401).send({ error: err })
+      appendSpec = {}
+      appendSpec[info.nextRow] = req.body.rows
+      spreadsheet.add appendSpec
+      # TODO: Allocate size more efficiently
+      spreadsheet.send {autoSize: true}, (err) ->
+        if err then return res.status(401).send({ error: err })
+        res.json
+          success: true
+  )
 
 mainJs = fs.readFileSync("ctxscriptClientMain.js", "utf8")
 app.get "/main.js", allowXorigin, (req, res, next) ->
@@ -352,6 +446,10 @@ esclient.ping(
           properties:
             email: {type : "string", index : "not_analyzed"}
             key: {type : "string", index : "not_analyzed"}
+            'googleCredentials.access_token': {type : "string", index : "not_analyzed"}
+            'googleCredentials.refresh_token': {type : "string", index : "not_analyzed"}
+            'googleCredentials.token_type': {type : "string", index : "not_analyzed"}
+            'googleCredentials.expiry_date': {type : "integer"}
   .then ->
     yamlhead = require('yamlhead')
     path = require('path')
@@ -360,6 +458,8 @@ esclient.ping(
       "contextScripts/getText.md"
       "contextScripts/starfleet.md"
       "contextScripts/extractTables.md"
+      "contextScripts/editGoogleSheet.md"
+      "contextScripts/getLinks.md"
     ].map (curPath) ->
       return new Promise (resolve, reject)->
         yamlhead curPath, (err, yaml, content)->

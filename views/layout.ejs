@@ -37,6 +37,19 @@ $(function(){
         }).text(config.user ? "Context Script" : "Context Script Demo"));
     });
 });
+$(function() {
+	$(".sign-in").click(function() {
+		navigator.id.get(function(assertion) {
+			if (assertion) {
+				$("#authForm #assertion").val(assertion);
+				$("#authForm").submit();
+			}
+			else {
+				location.reload();
+			}
+		});
+	});
+});
 </script>
 </head>
 
@@ -47,25 +60,7 @@ $(function(){
 	<div class="menu-bar">
 		<div class="menu-bar-container">
 		<% if (!user) { %>
-			<script>
-				$(function() {
-					$("#browserid").click(function() {
-						navigator.id.get(function(assertion) {
-							if (assertion) {
-								$("input").val(assertion);
-								$("form").submit();
-							}
-							else {
-								location.reload();
-							}
-						});
-					});
-				});
-			</script>
-			<form action="/auth/browserid?redirect=/myscripts" method="post" style="display:none;">
-				<input type="text" name="assertion" />
-			</form>
-			<a class="btn" id="browserid">Sign In</a>
+			<a class="btn sign-in">Sign In</a>
 		<% } else { %>
 			<a class="btn" href="/myscripts">My Account</a><!--
 			--><a class="btn" href="/logout">Sign Out</a>
@@ -80,6 +75,9 @@ $(function(){
 		<a href="https://github.com/contextscript/contextscript">Context Script github</a>
 		<a href="https://groups.google.com/forum/#!forum/context-script">Mailing list</a>
 	</div>
+	<form id="authForm" action="/auth/browserid?redirect=<%- (typeof redirect != "undefined") ? redirect : "/myscripts" %>" method="post" style="display:none;">
+		<input type="text" name="assertion" id="assertion" />
+	</form>
 </body>
 
 </html>

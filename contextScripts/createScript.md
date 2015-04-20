@@ -4,6 +4,7 @@ q:
   - "Create a script"
   - "Create a script for this context"
   - "Create a script from this one"
+  - "Clone this script"
   - "Edit this script"
 
 ---
@@ -121,6 +122,7 @@ Promise.all([
         alert("Which one?");
       }
     },
+    "Clone this script" : ()=>qItemMap["Create a script from this one"](),
     "Edit this script" : ()=>{
       let prevCtxScript = cxsAPI.getPrevEvaledCtxScript();
       if(prevCtxScript) {

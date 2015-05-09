@@ -1,11 +1,13 @@
 window.initializeCtxScript = function(config, options){
 console.log("Initializing context script...");
 var VERSION = "0.0.0";
-var context = {
-  location: {
-    href: window.location.href,
-    host: window.location.host
-  }
+var createContext = function(){
+  return {
+    location: {
+      href: window.location.href,
+      host: window.location.host
+    }
+  };
 };
 var history = [];
 System.import("jquery@2.1").then(function(jQuery) {
@@ -153,7 +155,7 @@ Promise.all([
 });
 };
 var doSearch = function(q){
-  var currentContext = Object.create(context);
+  var currentContext = createContext();
   currentContext.q = q;
   //Beware that the result might not be present.
   var historyItem = {

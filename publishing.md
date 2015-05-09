@@ -15,8 +15,15 @@ have to go through the review queue again.~~
 
 ### Guidelines for writing context scripts
 
+ * No irreversible actions may be performed without prompting the user
+   because scripts can be inadvertanly triggered.
+   For example, a script that sends emails should let the user know what it will
+   do before sending the email, and give them an oppertunity to cancel the action.
+   A command like "send this email to X too,"
+   which is only intended to add X to the list of recipients for an email,
+   could trigger the send email script because it has a similar trigger phrase.
+ * Respect the user. 
  * Interact with the context script client through the ctxscript variable.
  * Load external libraries from [jspm](jspm.io) via System.import
- * Respect the user.
 
 If you would like to add a guideline, feel free to submit a pull request on this file.

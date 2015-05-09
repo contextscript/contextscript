@@ -73,6 +73,18 @@ var afterAll = function(funcs, callback){
     });
   });
 };
+var initScriptsLoaded = false;
+window.setTimeout(function(){
+  if(!initScriptsLoaded) {
+    alert(
+      "The Context Script bookmarklet is taking a long time load required remote scripts. " +
+      "These are the most likely reasons:\n" +
+      " * This website has a CSP policy that blocks remote scripts. If this is the case, you should see error messages in your browser's console.\n" +
+      " * There is a problem with the Context Script server or the jspm CDN it relies on.\n" +
+      " * You have a slow internet connection. The scripts may yet load when you close this alert.\n"
+    );
+  }
+}, 4000);
 afterAll([
   config.url + "/main.js",
   "https://github.jspm.io/jmcriffey/bower-traceur@0.0.79/traceur.js"
@@ -81,6 +93,7 @@ afterAll([
     loadScript(scriptURL, callback);
   };
 }), function(){
+  initScriptsLoaded = true;
   loadScript("https://github.jspm.io/ModuleLoader/es6-module-loader@0.10.0/dist/es6-module-loader.js",
   function(){
     loadScript("https://jspm.io/system@0.9.js",

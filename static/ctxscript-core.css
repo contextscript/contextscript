@@ -10,6 +10,7 @@
   z-index: 999999999;
   font: 14px arial, sans-serif;
   color: black;
+  pointer-events: none;
 }
 .ctxscript-box {
   display: block;
@@ -22,6 +23,8 @@
   clear: both;
   width: 410px;
   box-shadow: inset 0px 1px 2px white;
+  pointer-events: auto;
+  box-sizing: content-box;
 }
 .ctxscript-container #ctxscript-q {
   height: 24px;

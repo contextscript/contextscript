@@ -1,6 +1,6 @@
 window.initializeCtxScript = function(config, options){
 console.log("Initializing context script...");
-var VERSION = "0.0.0";
+var VERSION = "0.0.1";
 var createContext = function(){
   return {
     location: {
@@ -159,7 +159,7 @@ var doSearch = function(q){
   currentContext.q = q;
   //Beware that the result might not be present.
   var historyItem = {
-    searchContext: currentContext
+    context: currentContext
   };
   createBox('<span class="ctxscript-arrow">&gt;</span>' + q)
     .addClass("ctxscript-prev");
@@ -170,7 +170,10 @@ var doSearch = function(q){
     currentHistoryItem: historyItem
   });
   historyItem.resultPromise = cxsAPI.resultPromise;
-  
+  var prevEvaledCtxScript = cxsAPI.getPrevEvaledCtxScript();
+  if(prevEvaledCtxScript) {
+    currentContext.prevCtxScriptId = prevEvaledCtxScript._id;
+  }
   cxsAPI.apiPost("/v0/search", {
     context: currentContext
   }).success(function(resp){
@@ -268,9 +271,9 @@ $mainContainer.find('.ctxscript-settings-btn').prop('disabled', false);
 //$suggestions.append('<sup>suggestions:</sup>');
 //$mainContainer.append($suggestions);
 if(options.scriptId) {
-  var currentContext = Object.create(context);
+  var currentContext = createContext();
   var historyItem = {
-    searchContext: currentContext
+    context: currentContext
   };
   var cxsAPI = createContextScriptAPI({
     $el: createBox('Loading...'),

@@ -34,7 +34,7 @@ let ctrlTemplate = (templateContext)=>{
       `<small>You must be signed into a contextscript.com account to save this script.</small><br />`
       : ""
     }
-    <small>Script Id: <b>${ templateContext.scriptId }</b></small>
+    <small>Editing script with id: <b>${ templateContext.scriptId }</b></small>
   `;
 }
 let template = (templateContext)=>{
@@ -89,9 +89,9 @@ Promise.all([
 ]).then(function([ace, YAML, myContextScript]){
   window.require = window.pageRequire;
   //Set some defaults:
-  var createdContext = $.extend({}, cxsAPI.context, {
+  var createdContext = {
     q:"Write a trigger phrase here..."
-  }, true);
+  };
   var createdScript = 'cxsAPI.$el.text("Hello World!");';
   var scriptId = null;
   if(cxsAPI.config.user) {
@@ -108,6 +108,8 @@ Promise.all([
     },
     "Create a script for this context" : ()=>{
       //It's a bit ambiguous exactly which context "this" refers to.
+      //This assumes it refers to the previous script's context
+      //rather than the context created by invoking the command.
       let prevHistItem = cxsAPI.getPrevHistItem();
       if(prevHistItem) {
         $.extend(createdContext, prevHistItem.context, true);
@@ -149,12 +151,30 @@ Promise.all([
   contextEditor.setOption("minLines", 2);
   contextEditor.setOption("highlightActiveLine", false);
   contextEditor.getSession().setTabSize(2);
-  contextEditor.getSession().setValue(
-    "# The location is optional. If you specify a url href, \n" +
-    "# it must exactly match the users url for script to be triggered.\n" +
-    // extend is used to copy the prototype properties so they are serialized.
-    YAML.dump(createdContext, 0, 2)
-  );
+  
+  contextYAML = YAML.dump({q: createdContext.q});
+  contextYAML +=
+  "# If you specify a url href, the script will only be triggered when\n" +
+  "# the user is visiting that exact url (including hash and query components).\n";
+  if("location" in createdContext) {
+    contextYAML += YAML.dump({location: createdContext.location});
+  } else {
+    contextYAML += "# " + YAML.dump({
+      location: cxsAPI.context.location || null
+    }).replace(/\n/g, "\n# ");
+  }
+  contextYAML += "\n" +
+  "# Setting the prevCtxScriptId makes it so the script can only be triggered\n" +
+  "# immediately after the script with the given id has been triggered.\n";
+  if("prevCtxScriptId" in createdContext) {
+    contextYAML += YAML.dump({prevCtxScriptId: createdContext.prevCtxScriptId});
+  } else {
+    contextYAML += "# " + YAML.dump({
+      prevCtxScriptId: cxsAPI.context.prevCtxScriptId || null
+    }).replace(/\n/g, "\n# ");
+  }
+
+  contextEditor.getSession().setValue(contextYAML);
   var scriptEditor = ace.edit(cxsAPI.$el.find("#script")[0]);
   //scriptEditor.getSession().setMode("ace/mode/javascript");
   scriptEditor.renderer.setShowGutter(false);

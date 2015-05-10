@@ -214,7 +214,23 @@ app.post "/v0/search", allowXorigin, (req, res, next) ->
               field: fieldname
           }
         ]
-          
+  if req.body.context.prevCtxScriptId
+    mustTerms.push
+      "or": [
+        {
+          term:
+            prevCtxScriptId: req.body.context.prevCtxScriptId
+        }
+        {
+          missing:
+            field: "prevCtxScriptId"
+        }
+      ]
+  else
+    mustTerms.push
+      missing:
+        field: "prevCtxScriptId"
+  
   esclient.search(
     index: "contextscripts"
     body:
@@ -255,7 +271,7 @@ app.post "/v0/scripts", allowXorigin, requireUserKey, (req, res, next) ->
           href: { type: "string" }
       prevResultSchema:
         type: "object"
-      prevContextScript:
+      prevCtxScriptId:
         type: "string"
 		required: ["q"]
 		additionalProperties: false
@@ -436,8 +452,9 @@ esclient.ping(
         contextscript:
           properties:
             savedBy: {type : "string", index : "not_analyzed"}
-            "context.location.host" : {type : "string", index : "not_analyzed"}
-            "context.location.href" : {type : "string", index : "not_analyzed"}
+            "context.location.host": {type : "string", index : "not_analyzed"}
+            "context.location.href": {type : "string", index : "not_analyzed"}
+            "context.prevCtxScriptId": {type : "string", index : "not_analyzed"}
   .then ->
     return esclient.indices.putMapping
       type: "user"

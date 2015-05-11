@@ -19,6 +19,10 @@ injectContextScript(<%- JSON.stringify(config) %>, {
 });
 $("#approve").click(function(){
   $.post("/v0/publish/<%- id %>")
+    .then(function(r){
+      console.log(r);
+      alert("Script published");
+    })
     .fail(function(e){
       console.log(e);
       alert(JSON.stringify(e));

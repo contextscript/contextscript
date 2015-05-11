@@ -2,14 +2,14 @@
 <html>
 
 <head>
-	<meta charset=utf-8 />
-	<link href="/favicon.ico" rel="shortcut icon" type="image/x-icon" />
-	<title>Context Script</title>
-	<meta name="Description" content="Scripts for any situation.">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link href="/site.css" type="text/css" rel="stylesheet" />
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-	<script src="https://login.persona.org/include.js" type="text/javascript"></script>
+    <meta charset=utf-8 />
+    <link href="/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+    <title>Context Script</title>
+    <meta name="Description" content="Scripts for any situation.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/site.css" type="text/css" rel="stylesheet" />
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://login.persona.org/include.js" type="text/javascript"></script>
 <script>
 $(function(){
     $.when(
@@ -28,8 +28,8 @@ $(function(){
         script = (
             injectScript +
             "injectContextScript(" +
-	            JSON.stringify(config) + "," +
-	            "{ init : " + loadCssFunc + "}" +
+                JSON.stringify(config) + "," +
+                "{ init : " + loadCssFunc + "}" +
             ");"
         );
         $(".bookmarklet-area").append($('<a class="bookmarklet">').prop({
@@ -38,46 +38,53 @@ $(function(){
     });
 });
 $(function() {
-	$(".sign-in").click(function() {
-		navigator.id.get(function(assertion) {
-			if (assertion) {
-				$("#authForm #assertion").val(assertion);
-				$("#authForm").submit();
-			}
-			else {
-				location.reload();
-			}
-		});
-	});
+    $(".sign-in").click(function() {
+        navigator.id.get(function(assertion) {
+            if (assertion) {
+                var redirectURIComponent = location.search.match(/redirect=(.+?)(&|$)/);
+                var redirectPath = null;
+                if(redirectURIComponent) {
+                    redirectPath = decodeURIComponent(redirectURIComponent[1]);
+                }
+                document.querySelector("#authForm").action = "/auth/browserid?redirect=" +
+                    (redirectPath || location.pathname);
+                $("#authForm #assertion").val(assertion);
+                $("#authForm").submit();
+            }
+            else {
+                location.reload();
+            }
+        });
+    });
 });
 </script>
 </head>
 
 <body>
-	<div class="header">
-		<h2><a href="/">Context Script</a></h2>
-	</div>
-	<div class="menu-bar">
-		<div class="menu-bar-container">
-		<% if (!user) { %>
-			<a class="btn sign-in">Sign In</a>
-		<% } else { %>
-			<a class="btn" href="/myscripts">My Account</a><!--
-			--><a class="btn" href="/logout">Sign Out</a>
-		<% } %>
-		</div>
-	</div>
-	<div class="main">
-		<%- body %>
-	</div>
-	<hr>
-	<div class="footer-links">
-		<a href="https://github.com/contextscript/contextscript">Context Script github</a>
-		<a href="https://groups.google.com/forum/#!forum/context-script">Mailing list</a>
-	</div>
-	<form id="authForm" action="/auth/browserid?redirect=<%- (typeof redirect != "undefined") ? redirect : "/myscripts" %>" method="post" style="display:none;">
-		<input type="text" name="assertion" id="assertion" />
-	</form>
+    <div class="header">
+        <h2><a href="/">Context Script</a></h2>
+    </div>
+    <div class="menu-bar">
+        <div class="menu-bar-container">
+        <% if (!user) { %>
+            <a class="btn sign-in">Sign In</a>
+        <% } else { %>
+            <a class="btn" href="/myscripts">My Account</a><!--
+            --><a class="btn" href="/logout">Sign Out</a>
+        <% } %>
+        </div>
+    </div>
+    <div class="main">
+        <%- body %>
+    </div>
+    <hr>
+    <div class="footer-links">
+        <a href="https://github.com/contextscript/contextscript">Context Script github</a>
+        <a href="https://groups.google.com/forum/#!forum/context-script">Mailing list</a>
+    </div>
+    <form id="authForm" method="post" style="display:none;">
+        <input type="text" name="assertion" id="assertion" />
+    </form>
 </body>
 
 </html>

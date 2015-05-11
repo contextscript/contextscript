@@ -7,6 +7,24 @@
     <div class="bookmarklet-area"></div>
 </div>
 
+<script>
+$(function(){
+   $(".delete-script").click(function(evt){
+       var confP = prompt('Type "delete" to confirm you want to this script.');
+       if(confP === "delete") {
+           $.post("/v0/delete/" + $(evt.target).data("scriptid"))
+           .then(function(){
+               alert("Script deleted");
+               location.reload();
+           })
+           .fail(function(e){
+               alert(JSON.stringify(e));
+           });
+       }
+   });
+});
+</script>
+
 <h2 class="section-title">Your Scripts</h2>
 <table>
     <tr>
@@ -14,11 +32,30 @@
         <th>Published</th>
         <th>Last Modified</th>
     </tr>
-    <% result.hits.hits.forEach(function(hit){ %>
+    <% createdScripts.hits.hits.forEach(function(hit){ %>
     <tr>
         <td><a href="/contextscripts/<%= hit._id %>"><%= hit._source.context.q %></a></td>
         <td><%= (hit._source.published ? "Yes" : "No") %></td>
         <td><%= hit._source.lastModified %></td>
+        <td>
+            <button class="delete-script" data-scriptid="<%= hit._id %>">Delete</button>
+        </td>
     </tr>
     <% }); %>
 </table>
+
+<% if(editedScripts.hits.total > 0){ %>
+    <h2 class="section-title">Scripts You Modified</h2>
+    <table>
+        <tr>
+            <th>Context</th>
+            <th>Last Modified</th>
+        </tr>
+        <% editedScripts.hits.hits.forEach(function(hit){ %>
+        <tr>
+            <td><a href="/contextscripts/<%= hit._id %>"><%= hit._source.context.q %></a></td>
+            <td><%= hit._source.lastModified %></td>
+        </tr>
+        <% }); %>
+    </table>
+<% } %>

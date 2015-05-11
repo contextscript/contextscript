@@ -87,20 +87,20 @@ app.use partials()
 requireUserKey = (req, res, next) ->
   if not req.body.user?.id
     return res.status(401).send({ error: 'User id and key is required' })
-  esclient.get(
+  esclient.get
     index: "users"
     type: "user"
     id: req.body.user.id
-  ).then((user)->
+  .then (user)->
     if user._source.key == req.body.user.key
       req.user = user
       next()
     else
       res.status(401).send({ error: 'Invalid key' })
-  ).catch((e)->
+  .catch (e)->
     res.status(401).send({ error: 'Invalid user' })  
-  )
-  
+
+
 ensureAuthenticated = (req, res, next) ->
   if req.isAuthenticated()
     next()
@@ -135,27 +135,37 @@ app.get '/contextscripts/:id', (req, res, next) ->
       user: req.user
 
 app.get '/myscripts', ensureAuthenticated, (req, res, next) ->
-  esclient.search(
-    index: "contextscripts"
-    body:
-      query:
-        term:
-          "savedBy": req.user.id
-      _source:
-        exclude: ["script"]
-  ).then (result) ->
+  Promise.all [
+    esclient.search
+      index: "contextscripts"
+      body:
+        query:
+          term:
+            "savedBy": req.user.id
+        _source:
+          exclude: ["script"]
+    esclient.search
+      index: "contextscripts"
+      body:
+        query:
+          term:
+            "changes.author": req.user.id
+        _source:
+          exclude: ["script"]
+  ]
+  .then (result) ->
     res.render 'myscripts',
       user: req.user
-      result: result
+      createdScripts: result[0]
+      editedScripts: result[1]
       config:
         url: config.serverUrl
         user: req.user
-  .catch(next)
+  .catch next
 
 app.get "/login", (req, res) ->
   res.render "login",
     user: req.user
-    redirect: req?.query?.redirect
     config:
       url: config.serverUrl
       user: req.user
@@ -172,31 +182,16 @@ app.get "/logout", (req, res) ->
 app.post "/v0/search", allowXorigin, (req, res, next) ->
   if not req.body.context
     return res.status(400).send({ error: "No context provided" })
-  userOverrides = []
+  accessConditions = [{
+    term:
+      published: true
+  }]
   if req.body.user
-    orConditions = [{
+    accessConditions.push
       term:
         "savedBy": req.body.user.id
-    }]
-    #TODO: find all scriptIds the user has an override for.
-    userOverrides = []
-  else
-    orConditions = []
-  orConditions.push(
-    "and": [
-      {
-        term:
-          published: true
-      }
-      {
-        "not": 
-          ids:
-            values: userOverrides
-      }
-    ]
-  )
   mustTerms = [{
-    "or" : orConditions
+    "or" : accessConditions
   }]
   if req.body.context.location
     for prop of req.body.context.location
@@ -231,7 +226,7 @@ app.post "/v0/search", allowXorigin, (req, res, next) ->
       missing:
         field: "prevCtxScriptId"
   
-  esclient.search(
+  esclient.search
     index: "contextscripts"
     body:
       #explain: true
@@ -253,8 +248,16 @@ app.post "/v0/search", allowXorigin, (req, res, next) ->
           filter:
             bool:
               must: mustTerms
-  ).then (result) ->
+  .then (result) ->
+    parentOverrides = (
+      hit._source.parentId\
+      for hit in result.hits.hits\
+      when hit._source.parentId and hit._source.savedBy is req.body.user.id
+    )
+    result.hits.hits = result.hits.hits.filter (hit)->
+      parentOverrides.indexOf(hit._id) < 0
     res.json result.hits
+  .catch next
 
 app.post "/v0/scripts", allowXorigin, requireUserKey, (req, res, next) ->
   jsvResult = validate(req.body.context, {
@@ -280,60 +283,135 @@ app.post "/v0/scripts", allowXorigin, requireUserKey, (req, res, next) ->
     res.status(400).send({ error: jsvResult.errors.map((e)-> e.message) })
     return
   saveScript = ()->
-    esclient.index(
+    body = {
+      context: req.body.context
+      script: req.body.script
+      parentId: req.body.parentId
+      lastModified: new Date()
+      savedBy: req.body.user.id
+    }
+    # Provided if the script is forked from another
+    # and publishing should overwrite it.
+    if req.body.parentId
+      body.parentId = req.body.parentId
+    esclient.index
       index: "contextscripts"
       type: "contextscript"
       id: req.body._id
       # This will cause perf problems
       refresh: true
-      body:
-        context: req.body.context
-        script: req.body.script
-        lastModified: new Date()
-        savedBy: req.body.user.id
-        # Provided if the script is forked from another
-        # and publishing should overwrite it.
-        baseScriptId: req.body.baseScriptId
-    )
-    .then (result) ->
-      res.json(result)
-    .catch (e)-> next(e)
-  esclient.get(
+      body: body
+    .then (r)-> res.json(r)
+    .catch next
+  
+  esclient.get
     index: "contextscripts"
     type: "contextscript"
     id: req.body._id
-  )
   .then (script)->
-    # TODO: Add forking
     if script._source.savedBy != req.body.user.id
-      res.status(401).send({ error: 'Only the creator can save this script.' })
+      res.status(401).send
+        error: 'Only the creator can save this script.'
+    else if script._source.published
+      res.status(401).send
+        error: 'Published scripts can only be updated by publishing a fork.'
     else
       saveScript()
-  .catch -> saveScript()
+  .catch (err)->
+    if err.status == 404
+      # Save a new script
+      saveScript()
+    else
+      next(err)
 
 app.get "/v0/contextscripts/:id", allowXorigin, (req, res, next) ->
-  esclient.get(
+  esclient.get
     index: "contextscripts"
     type: "contextscript"
     id: req.params.id
-  ).then((result)->
-    res.json(result)
-  ).catch(next)
-  
+  .then (r)-> res.json(r)
+  .catch next
+
+app.post "/v0/delete/:id", ensureAuthenticated, (req, res, next) ->
+  esclient.get
+    index: "contextscripts"
+    type: "contextscript"
+    id: req.params.id
+  .then (script)->
+    if script._source.published and not req.user.admin
+      res.status(401).send
+        error: 'Published scripts can only be deleted by admins.'
+    else if script._source.savedBy == req.user.id
+      esclient.delete
+        index: "contextscripts"
+        type: "contextscript"
+        id: req.params.id
+        refresh: true
+      .then (r)-> res.json(r)
+      .catch next
+    else
+      res.status(401).send
+        error: 'Only the creator can delete this script.'
+  .catch next
+
 app.post "/v0/publish/:id", ensureAuthenticated, (req, res, next) ->
   if not req.user.admin
-    return res.status(401).send({ error: 'Must be admin' })
-  esclient.update(
+    return res.status(401).send
+      error: 'Must be admin'
+  esclient.get
     index: "contextscripts"
     type: "contextscript"
     id: req.params.id
-    refresh: true
-    body:
-      doc:
-        published: true
-  ).then((result)->
-    res.json(result)
-  ).catch(next)
+  .then (script)->
+    if script._source.parentId
+      esclient.get
+        index: "contextscripts"
+        type: "contextscript"
+        id: script._source.parentId
+      .then (parentScript)->
+        change = {
+          author: script._source.savedBy
+          date: new Date()
+        }
+        esclient.update
+          index: "contextscripts"
+          type: "contextscript"
+          id: script._source.parentId
+          refresh: true
+          body:
+            doc:
+              context: script._source.context
+              script: script._source.script
+              lastModified: new Date()
+              # TODO: Store previous version of the code somehow
+              changes: (
+                if parentScript._source.changes \
+                then parentScript._source.changes.concat([change]) \
+                else [change]
+              )
+        .then ->
+          esclient.delete
+            index: "contextscripts"
+            type: "contextscript"
+            id: req.params.id
+            refresh: true
+          .then (r)-> res.json(r)
+          .catch next
+        .catch next
+      .catch next
+    else
+      esclient.update(
+        index: "contextscripts"
+        type: "contextscript"
+        id: req.params.id
+        refresh: true
+        body:
+          doc:
+            published: true
+      )
+      .then (r)-> res.json(r)
+      .catch next
+  .catch next
 
 # A endpoints for editing google sheets.
 # TODO: Things like this should be independent services
@@ -451,7 +529,9 @@ esclient.ping(
       body:
         contextscript:
           properties:
+            "changes.author": {type : "string", index : "not_analyzed"}
             savedBy: {type : "string", index : "not_analyzed"}
+            parentId: {type : "string", index : "not_analyzed"}
             "context.location.host": {type : "string", index : "not_analyzed"}
             "context.location.href": {type : "string", index : "not_analyzed"}
             "context.prevCtxScriptId": {type : "string", index : "not_analyzed"}
@@ -490,6 +570,8 @@ esclient.ping(
               refresh: true
               body:
                 published: true
+                savedBy: "ContextScriptInit"
+                lastModified: new Date()
                 context: yaml
                 # The first and last lines are markdown formatting.
                 script: content.split('\n').slice(1,-1).join('\n')

@@ -1,3 +1,7 @@
-<h2>Sign in is required to view this page</h2>
-
-<img src="https://developer.mozilla.org/files/3969/plain_sign_in_blue.png" class="sign-in"/>
+<% if (!user) { %>
+    <h2>Sign in is required to view this page.</h2>
+    
+    <img src="https://developer.mozilla.org/files/3969/plain_sign_in_blue.png" class="sign-in"/>
+<% } else { %>
+    <h2>You are signed in.</h2>
+<% } %>

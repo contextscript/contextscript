@@ -6,18 +6,17 @@ q:
   - "Create a script from this one"
   - "Clone this script"
   - "Edit this script"
+  - "Fork this script"
 
 ---
 ```javascript
 let ctrlTemplate = (templateContext)=>{
-  //TODO: Add last saved date
-  //TODO: Add indicator that shows if a script has been published or is queued.
   return `
     <div class="ctxscript-btn-group">
       <button
         id="save"
         class="ctxscript-btn"
-        ${ templateContext.user ? '' : 'disabled' }>
+      >
         Save
       </button>
       <button id="publish"
@@ -30,14 +29,11 @@ let ctrlTemplate = (templateContext)=>{
         About Saving and Publishing
       </a>
     </div>
-    ${ !templateContext.user ?
-      `<small>You must be signed into a contextscript.com account to save this script.</small><br />`
-      : ""
-    }
-    <small>Editing script with id: <b>${ templateContext.scriptId }</b></small>
   `;
 }
 let template = (templateContext)=>{
+  let { edCtxScript, user, baseUrl } = templateContext;
+  //TODO: Add last saved date
   return `
     <style>
       .edit-area {
@@ -59,6 +55,31 @@ let template = (templateContext)=>{
       }
     </style>
     <div class="ctxscript-editor">
+      <small>
+        Editing script:
+        <a
+          href="${ baseUrl }/contextscripts/${ edCtxScript._id }"
+          target="_blank">
+          ${ edCtxScript._id }
+        </a>
+      </small>
+      ${ edCtxScript.parentId ?
+          `<br /><small>
+            This is a fork of:
+            <a
+              href="${ baseUrl }/contextscripts/${ edCtxScript.parentId }"
+              target="_blank">
+              ${ edCtxScript.parentId }
+            </a>
+          </small>`
+        : ""
+      }
+      ${ edCtxScript.lastModified ?
+        `<br /><small>
+          Last Modified: ${(new Date(edCtxScript.lastModified)).toDateString()}
+        </small>`
+      : ""
+      }
       <h4>Context</h4>
       <pre id="context" class="edit-area"></pre>
       <h4>Script</h4>
@@ -70,7 +91,28 @@ let template = (templateContext)=>{
         </legend>
         <div class="test-container"></div>
       </fieldset>
-      <div id="controls">${ ctrlTemplate(templateContext) }</div>
+      ${ user ?
+        ( edCtxScript.published ?
+          `<div>
+          This script has been published, you cannot save changes to it directly.
+          However, you can override the script by creating a fork.
+          If the fork is published, it will replace the original.
+          <button id="fork" class="ctxscript-btn">Create Fork</button>
+          </div>`
+          :
+          ( (!edCtxScript.savedBy || edCtxScript.savedBy === user.id) ?
+            `<div id="controls">${ ctrlTemplate(templateContext) }</div>`
+            :
+            `<div>
+            You must be be the script's creator to save changes to it.
+            However, you can override it by creating a fork of it.
+            <button id="fork" class="ctxscript-btn">Create Fork</button>
+            </div>`
+          )
+        )
+        :
+        `<div>You must be signed into a contextscript.com account to save this script.</div>`
+      }
     </div>`;
 };
 // If require is defined on the page it can break ace
@@ -81,27 +123,32 @@ cxsAPI.$el.text('Loading editor...');
 Promise.all([
   System.import('ace/ace'),
   System.import('github:nodeca/js-yaml@master/dist/js-yaml'),
-  new Promise(function(resolve, reject){
+  new Promise((resolve, reject)=>{
     if(!cxsAPI.args.id) return resolve();
     $.get(cxsAPI.config.url + '/v0/contextscripts/' + cxsAPI.args.id)
-      .success(resolve).fail((resp)=>reject({reason: "missing", resp: resp}))
+      .success(resolve)
+      .fail((resp)=>reject({reason: "missing", resp: resp}))
   })
-]).then(function([ace, YAML, myContextScript]){
+]).then(([ace, YAML, myContextScript])=>{
   window.require = window.pageRequire;
+  function generateScriptId(){
+    return cxsAPI.config.user.id + '-' + Number(new Date());
+  }
   //Set some defaults:
-  var createdContext = {
-    q:"Write a trigger phrase here..."
+  var edCtxScript = {
+    context: {
+      q:"Write a trigger phrase here..."
+    },
+    script: 'cxsAPI.$el.text("Hello World!");',
+    _id: null
   };
-  var createdScript = 'cxsAPI.$el.text("Hello World!");';
-  var scriptId = null;
   if(cxsAPI.config.user) {
-    scriptId = cxsAPI.config.user.id + '-' + Number(new Date());
+    edCtxScript._id = generateScriptId();
   }
   var qItemMap = {
     "Edit script with id {{id}}" : ()=>{
-      createdContext = $.extend({}, myContextScript._source.context, true);
-      createdScript = myContextScript._source.script;
-      scriptId = myContextScript._id;
+      $.extend(edCtxScript, myContextScript._source, true);
+      edCtxScript._id = myContextScript._id;
     },
     "Create a script" : ()=>{
       //The defaults are fine. We don't need to do anything.
@@ -112,128 +159,157 @@ Promise.all([
       //rather than the context created by invoking the command.
       let prevHistItem = cxsAPI.getPrevHistItem();
       if(prevHistItem) {
-        $.extend(createdContext, prevHistItem.context, true);
+        $.extend(edCtxScript.context, prevHistItem.context, true);
       }
     },
     "Create a script from this one" : ()=>{
       let prevCtxScript = cxsAPI.getPrevEvaledCtxScript();
       if(prevCtxScript) {
-        createdContext = $.extend({}, prevCtxScript._source.context, true);
-        createdScript = prevCtxScript._source.script;
+        edCtxScript.context = $.extend({}, prevCtxScript._source.context, true);
+        edCtxScript.script = prevCtxScript._source.script;
       } else {
-        alert("Which one?");
+        throw new Error("Which one?");
       }
     },
     "Clone this script" : ()=>qItemMap["Create a script from this one"](),
     "Edit this script" : ()=>{
       let prevCtxScript = cxsAPI.getPrevEvaledCtxScript();
       if(prevCtxScript) {
-        createdContext = $.extend({}, prevCtxScript._source.context, true);
-        createdScript = prevCtxScript._source.script;
-        scriptId = prevCtxScript._id;
+        $.extend(edCtxScript, prevCtxScript._source, true);
+        edCtxScript._id = prevCtxScript._id;
       } else {
-        alert("Which one?");
+        throw new Error("Which one?");
+      }
+    },
+    "Fork this script" : ()=>{
+      let prevCtxScript = cxsAPI.getPrevEvaledCtxScript();
+      if(prevCtxScript) {
+        if(!prevCtxScript._source.published && prevCtxScript._source.savedBy === cxsAPI.config.user.id) {
+          throw new Error("You cannot fork your own scripts unless they have been published.");
+          // Currently, there isn't a mechanism for using other people's
+          // unpublished scripts, so checking who saved the script might not
+          // be necessary. However, if something like trusted groups which
+          // share scripts is implmented, that could change.
+        } else {
+          edCtxScript.context = $.extend({}, prevCtxScript._source.context, true);
+          edCtxScript.script = prevCtxScript._source.script;
+          edCtxScript.parentId = prevCtxScript._id;
+        }
+      } else {
+        throw new Error("Which one?");
       }
     }
   };
   if(cxsAPI.qItem in qItemMap) qItemMap[cxsAPI.qItem]();
   
-  cxsAPI.$el.html(template({
-    user: cxsAPI.config.user,
-    scriptId: scriptId
-  }));
-  var contextEditor = ace.edit(cxsAPI.$el.find("#context")[0]);
-  //TODO: Make highlighting work
-  // Related: https://github.com/jspm/registry/issues/38
-  //contextEditor.getSession().setMode("ace/mode/yaml");
-  contextEditor.renderer.setShowGutter(false);
-  contextEditor.setOption("maxLines", 60);
-  contextEditor.setOption("minLines", 2);
-  contextEditor.setOption("highlightActiveLine", false);
-  contextEditor.getSession().setTabSize(2);
+  let render = ()=>{
+    cxsAPI.$el.off("click");
+    cxsAPI.$el.html(template({
+      user: cxsAPI.config.user,
+      edCtxScript: edCtxScript,
+      baseUrl: cxsAPI.config.url
+    }));
+    var contextEditor = ace.edit(cxsAPI.$el.find("#context")[0]);
+    //TODO: Make highlighting work
+    // Related: https://github.com/jspm/registry/issues/38
+    //contextEditor.getSession().setMode("ace/mode/yaml");
+    contextEditor.renderer.setShowGutter(false);
+    contextEditor.setOption("maxLines", 60);
+    contextEditor.setOption("minLines", 2);
+    contextEditor.setOption("highlightActiveLine", false);
+    contextEditor.getSession().setTabSize(2);
+    
+    contextYAML = YAML.dump({q: edCtxScript.context.q});
+    contextYAML +=
+    "# If you specify a url href, the script will only be triggered when\n" +
+    "# the user is visiting that exact url (including hash and query components).\n";
+    if("location" in edCtxScript.context) {
+      contextYAML += YAML.dump({location: edCtxScript.context.location});
+    } else {
+      contextYAML += "# " + YAML.dump({
+        location: cxsAPI.context.location || null
+      }).replace(/\n/g, "\n# ");
+    }
+    contextYAML += "\n" +
+    "# Setting the prevCtxScriptId makes it so the script can only be triggered\n" +
+    "# immediately after the script with the given id has been triggered.\n";
+    if("prevCtxScriptId" in edCtxScript.context) {
+      contextYAML += YAML.dump({prevCtxScriptId: edCtxScript.context.prevCtxScriptId});
+    } else {
+      contextYAML += "# " + YAML.dump({
+        prevCtxScriptId: cxsAPI.context.prevCtxScriptId || null
+      }).replace(/\n/g, "\n# ");
+    }
   
-  contextYAML = YAML.dump({q: createdContext.q});
-  contextYAML +=
-  "# If you specify a url href, the script will only be triggered when\n" +
-  "# the user is visiting that exact url (including hash and query components).\n";
-  if("location" in createdContext) {
-    contextYAML += YAML.dump({location: createdContext.location});
-  } else {
-    contextYAML += "# " + YAML.dump({
-      location: cxsAPI.context.location || null
-    }).replace(/\n/g, "\n# ");
-  }
-  contextYAML += "\n" +
-  "# Setting the prevCtxScriptId makes it so the script can only be triggered\n" +
-  "# immediately after the script with the given id has been triggered.\n";
-  if("prevCtxScriptId" in createdContext) {
-    contextYAML += YAML.dump({prevCtxScriptId: createdContext.prevCtxScriptId});
-  } else {
-    contextYAML += "# " + YAML.dump({
-      prevCtxScriptId: cxsAPI.context.prevCtxScriptId || null
-    }).replace(/\n/g, "\n# ");
-  }
-
-  contextEditor.getSession().setValue(contextYAML);
-  var scriptEditor = ace.edit(cxsAPI.$el.find("#script")[0]);
-  //scriptEditor.getSession().setMode("ace/mode/javascript");
-  scriptEditor.renderer.setShowGutter(false);
-  scriptEditor.setOption("maxLines", 60);
-  scriptEditor.setOption("minLines", 3);
-  scriptEditor.setOption("highlightActiveLine", false);
-  scriptEditor.getSession().setValue(createdScript);
-  scriptEditor.getSession().setTabSize(2);
-  cxsAPI.$el.find("#test").click(function ( e ) {
-    var $testContainer = cxsAPI.$el.find('.test-container');
-    $testContainer.empty().html('<div class="ctxscript-result"></div>');
-    var script = scriptEditor.getSession().getValue();
-    var originalCxsAPI = cxsAPI;
-    (function(){
-      //Create a fake ctxscript variable for testing.
-      var cxsAPI = Object.create(originalCxsAPI);
-      cxsAPI.$el = $testContainer;
-      var scriptResult = eval(
-        traceur.Compiler.script(script)
-      );
-    }());
-  });
+    contextEditor.getSession().setValue(contextYAML);
+    var scriptEditor = ace.edit(cxsAPI.$el.find("#script")[0]);
+    //scriptEditor.getSession().setMode("ace/mode/javascript");
+    scriptEditor.renderer.setShowGutter(false);
+    scriptEditor.setOption("maxLines", 60);
+    scriptEditor.setOption("minLines", 3);
+    scriptEditor.setOption("highlightActiveLine", false);
+    scriptEditor.getSession().setValue(edCtxScript.script);
+    scriptEditor.getSession().setTabSize(2);
   
-  cxsAPI.$el.on("click", "#save", function ( e ) {
-    $(e.currentTarget).prop('disabled', true);
-    $(e.currentTarget).text("Saving...");
-    cxsAPI.apiPost('/v0/scripts', {
-      _id: scriptId,
-      context: YAML.safeLoad(contextEditor.getSession().getValue()),
-      script: scriptEditor.getSession().getValue()
-    }).fail(function(err){
-      alert(JSON.stringify(err));
-    }).always(function(resp){
-      console.log(resp);
-      $(e.currentTarget).prop('disabled', false);
-      $(e.currentTarget).text("Save");
+    cxsAPI.$el.on("click", "#test", (e)=>{
+      var $testContainer = cxsAPI.$el.find('.test-container');
+      $testContainer.empty().html('<div class="ctxscript-result"></div>');
+      var script = scriptEditor.getSession().getValue();
+      var originalCxsAPI = cxsAPI;
+      (function(){
+        //Create a fake ctxscript variable for testing.
+        var cxsAPI = Object.create(originalCxsAPI);
+        cxsAPI.$el = $testContainer;
+        var scriptResult = eval(
+          traceur.Compiler.script(script)
+        );
+      }());
     });
-  });
-  cxsAPI.$el.on("click", "#publish", function ( e ) {
-    $(e.currentTarget).prop('disabled', true);
-    $(e.currentTarget).text("Publishing...");
-    cxsAPI.apiPost('/v0/publish', {
-      _id: scriptId,
-      context: YAML.safeLoad(contextEditor.getSession().getValue()),
-      script: scriptEditor.getSession().getValue()
-    }).fail(function(err){
-      alert(JSON.stringify(err));
-    }).always(function(resp){
-      console.log(resp);
-      $(e.currentTarget).prop('disabled', false);
-      $(e.currentTarget).text("Publish");
+    cxsAPI.$el.on("click", "#fork", (e)=>{
+      edCtxScript = {
+        context: YAML.safeLoad(contextEditor.getSession().getValue()),
+        script: scriptEditor.getSession().getValue(),
+        parentId: edCtxScript._id,
+        _id: generateScriptId()
+      };
+      render();
     });
-  });
-}).catch(function(err) {
+    cxsAPI.$el.on("click", "#save", (e)=>{
+      $(e.currentTarget).prop('disabled', true);
+      $(e.currentTarget).text("Saving...");
+      cxsAPI.apiPost('/v0/scripts', $.extend({}, edCtxScript, {
+        context: YAML.safeLoad(contextEditor.getSession().getValue()),
+        script: scriptEditor.getSession().getValue()
+      })).fail((err)=>{
+        alert(JSON.stringify(err));
+      }).always((resp)=>{
+        console.log(resp);
+        $(e.currentTarget).prop('disabled', false);
+        $(e.currentTarget).text("Save");
+      });
+    });
+    cxsAPI.$el.on("click", "#publish", (e)=>{
+      $(e.currentTarget).prop('disabled', true);
+      $(e.currentTarget).text("Publishing...");
+      cxsAPI.apiPost('/v0/publish', {
+        _id: edCtxScript._id
+      }).fail(function(err){
+        alert(JSON.stringify(err));
+      }).always(function(resp){
+        console.log(resp);
+        $(e.currentTarget).prop('disabled', false);
+        $(e.currentTarget).text("Publish");
+      });
+    });
+  };
+  render();
+})
+.catch((err)=>{
   window.require = window.pageRequire;
   if(err.reason == "missing") {
     cxsAPI.$el.text('Error: Could not find script with the given id.');
   } else {
-    throw err;
+    cxsAPI.$el.text('Error: ' + err.message);
   }
 });
 ```

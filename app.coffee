@@ -550,6 +550,7 @@ esclient.ping(
   .then ->
     yamlhead = require('yamlhead')
     path = require('path')
+    # Modifications to these scripts will be overwritten when the server restarts.
     return Promise.all([
       "contextScripts/createScript.md"
       "contextScripts/getText.md"

@@ -7,38 +7,28 @@
     <div class="bookmarklet-area"></div>
 </div>
 
-<script>
-$(function(){
-   $(".delete-script").click(function(evt){
-       var confP = prompt('Type "delete" to confirm you want to this script.');
-       if(confP === "delete") {
-           $.post("/v0/delete/" + $(evt.target).data("scriptid"))
-           .then(function(){
-               alert("Script deleted");
-               location.reload();
-           })
-           .fail(function(e){
-               alert(JSON.stringify(e));
-           });
-       }
-   });
-});
-</script>
-
 <h2 class="section-title">Your Scripts</h2>
 <table>
     <tr>
         <th>Context</th>
         <th>Published</th>
         <th>Last Modified</th>
+        <th>Overrides Script</th>
     </tr>
     <% createdScripts.hits.hits.forEach(function(hit){ %>
     <tr>
         <td><a href="/contextscripts/<%= hit._id %>"><%= hit._source.context.q %></a></td>
         <td><%= (hit._source.published ? "Yes" : "No") %></td>
-        <td><%= hit._source.lastModified %></td>
+        <td class="local-date"><%= hit._source.lastModified %></td>
+        <td><% if("parentId" in hit._source){ %>
+          <a href="/contextscripts/<%= hit._source.parentId %>">Link</a>
+        <% } %></td>
         <td>
-            <button class="delete-script" data-scriptid="<%= hit._id %>">Delete</button>
+            <button
+                class="delete-script"
+                data-scriptid="<%= hit._id %>"
+                data-q="<%= hit._source.context.q %>"
+            >Delete</button>
         </td>
     </tr>
     <% }); %>
@@ -54,8 +44,35 @@ $(function(){
         <% editedScripts.hits.hits.forEach(function(hit){ %>
         <tr>
             <td><a href="/contextscripts/<%= hit._id %>"><%= hit._source.context.q %></a></td>
-            <td><%= hit._source.lastModified %></td>
+            <td class="local-date"><%= hit._source.lastModified %></td>
         </tr>
         <% }); %>
     </table>
 <% } %>
+
+
+<script>
+$(function() {
+  $(".delete-script").click(function(evt) {
+    var confP = prompt('Type "delete" to confirm you want to this script:\n' +
+      "Context: " + $(evt.target).data("q")
+    );
+    if (confP === "delete") {
+      $.post("/v0/delete/" + $(evt.target).data("scriptid"))
+        .then(function() {
+          alert("Script deleted");
+          location.reload();
+        })
+        .fail(function(e) {
+          alert(JSON.stringify(e));
+        });
+    }
+  });
+  // Convert the datetimes to a local format.
+  $(".local-date").map(function(idx, e) {
+    $(e).text(
+      new Date($(e).text()).toLocaleString()
+    );
+  });
+});
+</script>

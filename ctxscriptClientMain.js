@@ -65,7 +65,7 @@ var createBox = function(output){
   $mainContainer.find('#ctxscript-out').append($box);
   return $box;
 };
-$mainContainer.on('click', '.ctxscript-search-btn', function ( e ) {
+$mainContainer.on('click', '.ctxscript-search-btn', function(e){
   doSearch($(e.target).text());
 });
 //Preload:
@@ -235,18 +235,18 @@ var doSearch = function(q){
   //passed to the script.
   history = history.concat(historyItem);
 };
-$mainContainer.on('click', '.ctxscript-invoke', function ( e ) {
+$mainContainer.on('click', '.ctxscript-invoke', function(e){
   var $q = $mainContainer.find('#ctxscript-q');
   doSearch($q.val());
   $q.val('');
 });
-$mainContainer.on('click', '.ctxscript-settings-btn', function ( e ) {
+$mainContainer.on('click', '.ctxscript-settings-btn', function(e){
   $mainContainer.find('.ctxscript-settings').toggle();
 });
-$mainContainer.on('click', '.ctxscript-close', function ( e ) {
+$mainContainer.on('click', '.ctxscript-close', function(e){
   $mainContainer.hide();
 });
-$mainContainer.on('click', '.ctxscript-about', function ( e ) {
+$mainContainer.on('click', '.ctxscript-about', function(e){
   //The injection script could go out of sync with this one,
   //so it is versioned separately.
   //TODO: Make ctxscript alerts that allow copy/paste
@@ -257,11 +257,16 @@ $mainContainer.on('click', '.ctxscript-about', function ( e ) {
   );
 });
 //TODO: Go though command history with up/down arrows
-$mainContainer.on('keypress', '#ctxscript-q', function(e) {
+$mainContainer.on('keypress', '#ctxscript-q', function(e){
   if(e.which == 13) {
     var $q = $mainContainer.find('#ctxscript-q');
     doSearch($q.val());
     $q.val('');
+  }
+});
+$(document).keypress("e", function(e){
+  if(e.ctrlKey && e.shiftKey) {
+    $('.ctxscript-copilot').toggle();
   }
 });
 $mainContainer.find('.ctxscript-invoke').prop('disabled', false);

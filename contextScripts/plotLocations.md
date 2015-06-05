@@ -25,10 +25,18 @@ cxsAPI.import("github:Leaflet/Leaflet/dist/leaflet.css!")
     skipSelector:".ctxscript-container"
   });
   var resources;
-  cxsAPI.$el.append("Querying dbpedia...");
+  cxsAPI.$el.append("Querying dbpedia spotlight...");
+  if(window.location.protocol === "https:") {
+    cxsAPI.$el.append(`<p>
+      You may need to allow this page's content
+      to be sent over http in order to annotate it.
+      In Chrome, you can do this by clicking the
+      shield in the address bar.
+    </p>`);
+  }
   $.ajax({
     type: 'POST',
-    url: '//spotlight.sztaki.hu:2222/rest/annotate',
+    url: 'http://spotlight.sztaki.hu:2222/rest/annotate',
     data: {
       text: pageText,
       //Using a sparql query to filter locations
@@ -56,7 +64,7 @@ cxsAPI.import("github:Leaflet/Leaflet/dist/leaflet.css!")
     var uris = _.keys(uriToResources);
     $.ajax({
       type: 'POST',
-      url: '//dbpedia.org/sparql',
+      url: 'http://dbpedia.org/sparql',
       data: {
         format: "application/sparql-results+json",
         query: `SELECT

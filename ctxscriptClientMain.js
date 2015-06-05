@@ -56,7 +56,25 @@ var createContextScriptAPI = function(extras){
       if(prevHistItem) return prevHistItem.evaledCtxScript;
       return null;
     },
-    resultPromise: resultPromise
+    resultPromise: resultPromise,
+    //Wrapper for System.import that does require masking
+    //and import exception notices.
+    "import": function(identifier){
+      var that = this;
+      // If require is defined on the page it can break ace
+      // so it is temporairily kept in another variable.
+      window.pageRequire = window.require;
+      window.require = undefined;
+      return System.import(identifier)
+        .then(function(result){
+          window.require = window.pageRequire;
+          return result;
+        })
+        .catch(function(){
+          window.require = window.pageRequire;
+          that.$el.text("Error: Could not import script " + identifier);
+        });
+    }
   }, extras);
 };
 var createBox = function(output){
@@ -167,25 +185,7 @@ var doSearch = function(q){
     $el: createBox('Loading...'),
     history: history,
     context: currentContext,
-    currentHistoryItem: historyItem,
-    //Wrapper for System.import that does require masking
-    //and import exception notices.
-    "import": function(identifier){
-      var that = this;
-      // If require is defined on the page it can break ace
-      // so it is temporairily kept in another variable.
-      window.pageRequire = window.require;
-      window.require = undefined;
-      return System.import(identifier)
-        .then(function(result){
-          window.require = window.pageRequire;
-          return result;
-        })
-        .catch(function(){
-          window.require = window.pageRequire;
-          that.$el.text("Error: Could not import script " + identifier);
-        });
-    }
+    currentHistoryItem: historyItem
   });
   historyItem.resultPromise = cxsAPI.resultPromise;
   var prevEvaledCtxScript = cxsAPI.getPrevEvaledCtxScript();

@@ -5,19 +5,16 @@ body {
 .header {
     background-color: #ADA;
     border-bottom: 1px solid #484;
-}
-.header h1, .header h2 {
     font-family: sans-serif;
+    vertical-align: bottom;
+    padding-left: 10px;
+}
+.header-title {
     line-height: 40px;
     color: white;
     text-shadow: 1px 1px #484, 1px -1px #484, -1px -1px #484, -1px 1px #484, 0 0 1px #484;
     font-size: 24px;
-    vertical-align: bottom;
-    margin: auto;
-    padding-left: 10px;
-}
-.header a {
-    color: white;
+    font-weight: bold;
     text-decoration: none;
 }
 .main {

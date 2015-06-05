@@ -139,6 +139,10 @@ app.get '/myscripts', ensureAuthenticated, (req, res, next) ->
     esclient.search
       index: "contextscripts"
       body:
+        # TODO: Pagination
+        # It would be better use data end-points that are loaded on the page
+        # over AJAX.
+        size: 200
         query:
           term:
             "savedBy": req.user.id
@@ -147,6 +151,7 @@ app.get '/myscripts', ensureAuthenticated, (req, res, next) ->
     esclient.search
       index: "contextscripts"
       body:
+        size: 200
         query:
           term:
             "changes.author": req.user.id

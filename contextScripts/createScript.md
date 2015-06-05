@@ -115,14 +115,10 @@ let template = (templateContext)=>{
       }
     </div>`;
 };
-// If require is defined on the page it can break ace
-// so it is temporairily kept in another variable.
-window.pageRequire = window.require;
-window.require = undefined;
 cxsAPI.$el.text('Loading editor...');
 Promise.all([
-  System.import('ace/ace'),
-  System.import('github:nodeca/js-yaml@master/dist/js-yaml'),
+  cxsAPI.import('ace/ace'),
+  cxsAPI.import('github:nodeca/js-yaml@master/dist/js-yaml'),
   new Promise((resolve, reject)=>{
     if(!cxsAPI.args.id) return resolve();
     $.get(cxsAPI.config.url + '/v0/contextscripts/' + cxsAPI.args.id)
@@ -130,7 +126,6 @@ Promise.all([
       .fail((resp)=>reject({reason: "missing", resp: resp}))
   })
 ]).then(([ace, YAML, myContextScript])=>{
-  window.require = window.pageRequire;
   function generateScriptId(){
     return cxsAPI.config.user.id + '-' + Number(new Date());
   }
@@ -214,12 +209,14 @@ Promise.all([
     // Related: https://github.com/jspm/registry/issues/38
     //contextEditor.getSession().setMode("ace/mode/yaml");
     contextEditor.renderer.setShowGutter(false);
-    contextEditor.setOption("maxLines", 60);
+    contextEditor.setOption("maxLines", 50);
     contextEditor.setOption("minLines", 2);
     contextEditor.setOption("highlightActiveLine", false);
     contextEditor.getSession().setTabSize(2);
     
     contextYAML = YAML.dump({q: edCtxScript.context.q});
+    contextYAML +=
+    "# Lines beginning with a # are comments and they are not saved.\n"
     contextYAML +=
     "# If you specify a url href, the script will only be triggered when\n" +
     "# the user is visiting that exact url (including hash and query components).\n";
@@ -245,15 +242,15 @@ Promise.all([
     var scriptEditor = ace.edit(cxsAPI.$el.find("#script")[0]);
     //scriptEditor.getSession().setMode("ace/mode/javascript");
     scriptEditor.renderer.setShowGutter(false);
-    scriptEditor.setOption("maxLines", 60);
+    scriptEditor.setOption("maxLines", 50);
     scriptEditor.setOption("minLines", 3);
     scriptEditor.setOption("highlightActiveLine", false);
     scriptEditor.getSession().setValue(edCtxScript.script);
     scriptEditor.getSession().setTabSize(2);
   
     cxsAPI.$el.on("click", "#test", (e)=>{
-      var $testContainer = cxsAPI.$el.find('.test-container');
-      $testContainer.empty().html('<div class="ctxscript-result"></div>');
+      var $testContainer = $('<div class="test-container">');
+      cxsAPI.$el.find('.test-container').replaceWith($testContainer);
       var script = scriptEditor.getSession().getValue();
       var originalCxsAPI = cxsAPI;
       (function(){
@@ -305,7 +302,6 @@ Promise.all([
   render();
 })
 .catch((err)=>{
-  window.require = window.pageRequire;
   if(err.reason == "missing") {
     cxsAPI.$el.text('Error: Could not find script with the given id.');
   } else {

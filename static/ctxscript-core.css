@@ -12,6 +12,9 @@
   color: black;
   /* This cannot be used currently bc it makes scrollbars unclickable */
   /* pointer-events: none; */
+  /* reset styles */
+  text-align: left;
+  letter-spacing: normal;
 }
 .ctxscript-box {
   display: block;
@@ -54,9 +57,8 @@
 }
 .ctxscript-container .ctxscript-invoke, .ctxscript-container .ctxscript-settings-btn {
   display: inline-block;
-  margin-left: 2px;
+  margin: 0 0 0 2px;
   width: 25px;
   height: 24px;
   padding: 0px;
-  margin-top: 0;
 }

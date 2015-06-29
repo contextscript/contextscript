@@ -24,6 +24,6 @@ have to go through the review queue again.~~
    could trigger the send email script because it has a similar trigger phrase.
  * Respect the user. 
  * Interact with the context script client through the ctxscript variable.
- * Load external libraries from [jspm](jspm.io) via System.import
+ * Load external libraries from [jspm](https://jspm.io) via System.import
 
 If you would like to add a guideline, feel free to submit a pull request on this file.

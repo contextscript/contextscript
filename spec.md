@@ -52,7 +52,7 @@ A variable called `cxsAPI` is provides a number of important features to the scr
 
 #### cxsAPI.$el
 
-A jQuery referencing a container element intended for the script's output.
+A jQuery object referencing a container element for the script's output.
 
 #### cxsAPI.args
 

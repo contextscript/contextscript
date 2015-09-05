@@ -7,6 +7,7 @@ q:
   - "Clone this script"
   - "Edit this script"
   - "Fork this script"
+  - "new script"
 
 ---
 ```javascript
@@ -274,8 +275,13 @@ Promise.all([
     cxsAPI.$el.on("click", "#save", (e)=>{
       $(e.currentTarget).prop('disabled', true);
       $(e.currentTarget).text("Saving...");
+      var context = YAML.safeLoad(contextEditor.getSession().getValue());
+      if(!$.isPlainObject(context)) {
+        alert("Invalid context");
+        return;
+      }
       cxsAPI.apiPost('/v0/scripts', $.extend({}, edCtxScript, {
-        context: YAML.safeLoad(contextEditor.getSession().getValue()),
+        context: context,
         script: scriptEditor.getSession().getValue()
       })).fail((err)=>{
         alert(JSON.stringify(err));

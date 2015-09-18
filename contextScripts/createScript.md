@@ -278,6 +278,8 @@ Promise.all([
       var context = YAML.safeLoad(contextEditor.getSession().getValue());
       if(!$.isPlainObject(context)) {
         alert("Invalid context");
+        $(e.currentTarget).prop('disabled', false);
+        $(e.currentTarget).text("Save");
         return;
       }
       cxsAPI.apiPost('/v0/scripts', $.extend({}, edCtxScript, {

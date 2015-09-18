@@ -49,8 +49,15 @@ waitForStyles();
 document.body.appendChild(link);
 
 var loadScript = function(path, callback) {
+  // These functions can interfere with loading certain scripts.
+  window.pageRequire = window.require;
+  window.require = undefined;
+  window.pageDefine = window.define;
+  window.define = undefined;
   var s = document.createElement("script");
   s.addEventListener("load", function(evt){
+    window.require = window.pageRequire;
+    window.define = window.pageDefine;
     callback(evt);
   }, false);
   s.src = path;
@@ -98,7 +105,7 @@ afterAll([
   function(){
     loadScript("https://jspm.io/system@0.9.js",
     function(){
-      config.version = "0.0.0";
+      config.version = "0.0.1";
       window.initializeCtxScript(config, options);
     });
   });

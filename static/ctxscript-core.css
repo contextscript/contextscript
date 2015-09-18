@@ -7,7 +7,7 @@
   padding: 0;
   /* This prevents boxes from being cutoff when scrollbars are present */
   padding-left: 14px;
-  z-index: 999999999;
+  z-index: 9999999999;
   font: 14px arial, sans-serif;
   color: black;
   /* This cannot be used currently bc it makes scrollbars unclickable */

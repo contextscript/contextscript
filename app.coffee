@@ -581,7 +581,7 @@ esclient.ping(
                 lastModified: new Date()
                 context: yaml
                 # The first and last lines are markdown formatting.
-                script: content.split('\n').slice(1,-1).join('\n')
+                script: content.trim().split('\n').slice(1,-1).join('\n')
             .then(resolve)
             .catch(reject)
     )

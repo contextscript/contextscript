@@ -564,6 +564,7 @@ esclient.ping(
       "contextScripts/editGoogleSheet.md"
       "contextScripts/getLinks.md"
       "contextScripts/plotLocations.md"
+      "contextScripts/redditHN.md" 
     ].map (curPath) ->
       return new Promise (resolve, reject)->
         yamlhead curPath, (err, yaml, content)->
